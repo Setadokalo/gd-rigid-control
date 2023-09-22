@@ -1,0 +1,52 @@
+[gd_scene load_steps=5 format=3 uid="uid://dbvvdmbb7ejog"]
+
+[ext_resource type="VideoStream" path="res://assets/videos/splash.ogv" id="1_gxv4v"]
+[ext_resource type="Script" path="res://splash/VideoStreamPlayer.gd" id="2_bguye"]
+[ext_resource type="Texture2D" uid="uid://c534fs2rf18wy" path="res://assets/textures/wheel.png" id="3_5etxo"]
+[ext_resource type="Script" path="res://splash/SpinningWheel.gd" id="4_1aert"]
+
+[node name="VideoStreamPlayer" type="VideoStreamPlayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stream = ExtResource("1_gxv4v")
+autoplay = true
+expand = true
+script = ExtResource("2_bguye")
+must_play_entire_splash = false
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 2
+
+[node name="TextureProgressBar" type="TextureProgressBar" parent="."]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.85
+anchor_right = 0.5
+anchor_bottom = 0.85
+offset_left = -64.0
+offset_top = -64.0
+offset_right = 64.0
+offset_bottom = 64.0
+grow_horizontal = 2
+grow_vertical = 0
+max_value = 360.0
+step = 0.01
+value = 300.0
+fill_mode = 4
+nine_patch_stretch = true
+texture_progress = ExtResource("3_5etxo")
+tint_progress = Color(0.278431, 0.54902, 0.74902, 1)
+script = ExtResource("4_1aert")
+
+[connection signal="finished" from="." to="." method="_on_finished_playing"]

@@ -1,0 +1,151 @@
+[gd_scene load_steps=14 format=3 uid="uid://nyh5uuab077x"]
+
+[ext_resource type="Texture2D" uid="uid://cg7lgei710yfm" path="res://assets/textures/particle.png" id="1_n2k6d"]
+
+[sub_resource type="Gradient" id="Gradient_w7dp0"]
+interpolation_mode = 2
+interpolation_color_space = 2
+colors = PackedColorArray(0.110226, 0.42691, 0.546875, 1, 0.023412, 0.0338104, 0.160156, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_eqb8b"]
+gradient = SubResource("Gradient_w7dp0")
+
+[sub_resource type="Curve" id="Curve_0kchr"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.597679), -1.24468, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_0amx2"]
+curve = SubResource("Curve_0kchr")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sanlq"]
+emission_shape = 1
+emission_sphere_radius = 1.0
+gravity = Vector3(0, 0, 0)
+angular_velocity_min = 47.1
+angular_velocity_max = 237.4
+radial_accel_min = -7.1
+radial_accel_max = 2.4
+angle_min = -360.0
+angle_max = 360.0
+scale_min = 0.5
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_0amx2")
+color_ramp = SubResource("GradientTexture1D_eqb8b")
+hue_variation_min = -0.07
+hue_variation_max = 0.05
+turbulence_noise_strength = 20.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j6q2l"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("1_n2k6d")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_dbgku"]
+material = SubResource("StandardMaterial3D_j6q2l")
+size = Vector2(0.2, 0.2)
+
+[sub_resource type="Gradient" id="Gradient_ysu12"]
+interpolation_mode = 2
+interpolation_color_space = 2
+colors = PackedColorArray(0.550781, 0.0557704, 0.068099, 1, 0.160156, 0, 0.0982165, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_lhgon"]
+gradient = SubResource("Gradient_ysu12")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_6tv6v"]
+emission_shape = 1
+emission_sphere_radius = 1.0
+gravity = Vector3(0, 0, 0)
+angular_velocity_min = 47.1
+angular_velocity_max = 237.4
+radial_accel_min = -7.1
+radial_accel_max = 2.4
+angle_min = -360.0
+angle_max = 360.0
+scale_min = 0.5
+scale_max = 2.0
+scale_curve = SubResource("CurveTexture_0amx2")
+color_ramp = SubResource("GradientTexture1D_lhgon")
+hue_variation_min = -0.1
+hue_variation_max = 0.08
+turbulence_noise_strength = 20.0
+
+[sub_resource type="GDScript" id="GDScript_rs7j2"]
+script/source = "extends Area3D
+
+var particles_emit = true
+
+var _hovered_last_frame = false
+
+const COL_MASK = 0b1000_0000_0000_0000_0000_0000
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	if global_position.distance_squared_to(Globals.player.global_position) > 16.0:
+		collision_layer = COL_MASK
+		collision_mask = COL_MASK
+		particles_emit = true
+	else:
+		collision_layer = 0
+		collision_mask = 0
+		particles_emit = false
+	
+	$\"../HoverParticles\".emitting = $\"../HoverParticles\".emitting and particles_emit
+	$\"../PassiveParticles\".emitting = $\"../PassiveParticles\".emitting and particles_emit
+	
+	if not _hovered_last_frame:
+		$\"../PassiveParticles\".emitting = true and particles_emit
+		$\"../HoverParticles\".emitting = false
+	_hovered_last_frame = false
+
+# called by Player if this node is being hovered on this frame.
+func is_hovered_this_frame() -> void:
+	$\"../PassiveParticles\".emitting = false
+	$\"../HoverParticles\".emitting = true and particles_emit
+	_hovered_last_frame = true
+
+func activate(player: Player, distance: float) -> void:
+	print(\"activated at %f meters away\" % distance)
+	player.teleport(global_position)
+"
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_aw3oe"]
+radius = 0.890656
+
+[node name="TeleportTarget" type="Node3D"]
+
+[node name="PassiveParticles" type="GPUParticles3D" parent="."]
+amount = 512
+visibility_aabb = AABB(-2.06225, -1.96406, -2.05571, 4.12451, 3.92811, 4.11142)
+local_coords = true
+draw_order = 3
+process_material = SubResource("ParticleProcessMaterial_sanlq")
+draw_pass_1 = SubResource("QuadMesh_dbgku")
+
+[node name="HoverParticles" type="GPUParticles3D" parent="."]
+emitting = false
+amount = 512
+visibility_aabb = AABB(-2.0659, -1.96284, -2.03454, 4.13182, 3.92568, 4.06909)
+local_coords = true
+draw_order = 3
+process_material = SubResource("ParticleProcessMaterial_6tv6v")
+draw_pass_1 = SubResource("QuadMesh_dbgku")
+
+[node name="Area3D" type="Area3D" parent="."]
+collision_layer = 8388608
+collision_mask = 8388608
+monitoring = false
+monitorable = false
+script = SubResource("GDScript_rs7j2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("SphereShape3D_aw3oe")

@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://cwwog5aqflvgj"]
+
+[ext_resource type="Script" path="res://assets/box.gd" id="1_680kp"]
+[ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="2_ij8q8"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_40ubu"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8iq1x"]
+size = Vector3(2, 2, 0.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yrr4b"]
+size = Vector3(2, 2, 0.4)
+
+[node name="Box" type="RigidBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.27608, 0)
+collision_mask = 7
+mass = 100.0
+script = ExtResource("1_680kp")
+material = SubResource("StandardMaterial3D_40ubu")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_8iq1x")
+
+[node name="Smoothing" type="Node3D" parent="."]
+script = ExtResource("2_ij8q8")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Smoothing"]
+material_override = SubResource("StandardMaterial3D_40ubu")
+mesh = SubResource("BoxMesh_yrr4b")
+skeleton = NodePath("../..")

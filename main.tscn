@@ -1,0 +1,197 @@
+[gd_scene load_steps=20 format=3 uid="uid://bufdcwt3rhk4"]
+
+[ext_resource type="PackedScene" uid="uid://3572kk7dssru" path="res://maps/map.glb" id="2_louse"]
+[ext_resource type="PackedScene" uid="uid://d4bxmkgjuxpr4" path="res://player/Player.tscn" id="2_oq2e2"]
+[ext_resource type="PackedScene" uid="uid://nyh5uuab077x" path="res://Teleporter.tscn" id="3_lu84n"]
+[ext_resource type="PackedScene" uid="uid://dmid6b8or14f7" path="res://assets/barrel.tscn" id="4_lxys5"]
+[ext_resource type="PackedScene" uid="uid://cmjv0175hpojm" path="res://assets/static_box.tscn" id="5_kj3q2"]
+[ext_resource type="PackedScene" uid="uid://cwwog5aqflvgj" path="res://assets/box.tscn" id="6_68s8m"]
+[ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="7_1ppd3"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lnh4b"]
+
+[sub_resource type="Sky" id="Sky_ukpw2"]
+sky_material = SubResource("ProceduralSkyMaterial_lnh4b")
+
+[sub_resource type="Environment" id="Environment_tfs5x"]
+background_mode = 2
+sky = SubResource("Sky_ukpw2")
+tonemap_mode = 3
+tonemap_white = 5.0
+ssr_enabled = true
+ssr_depth_tolerance = 6.21
+ssao_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hdsvi"]
+size = Vector3(113.637, 32.8126, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rfv7g"]
+albedo_color = Color(0.403922, 0.0784314, 0.0784314, 1)
+roughness = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l1be4"]
+albedo_color = Color(0.772549, 0.686275, 0, 1)
+roughness = 0.75
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4ugao"]
+albedo_color = Color(0, 0.52549, 0.207843, 1)
+roughness = 0.25
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_ecjhm"]
+height = 0.2
+radius = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mghpj"]
+albedo_color = Color(0.12549, 0.12549, 0.12549, 1)
+roughness = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_xviyn"]
+material = SubResource("StandardMaterial3D_mghpj")
+top_radius = 2.0
+bottom_radius = 2.0
+height = 0.2
+
+[sub_resource type="Animation" id="Animation_buenw"]
+resource_name = "riseandfall"
+length = 6.0
+loop_mode = 1
+tracks/0/type = "position_3d"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, 0, 0, 0, 3, 1, 0, 3, 0, 6, 1, 0, 0, 0)
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_doyr1"]
+_data = {
+"riseandfall": SubResource("Animation_buenw")
+}
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_tfs5x")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(-0.3406, 0.709788, -0.616597, 0.170132, 0.691511, 0.702045, 0.924687, 0.134214, -0.356286, -53.2199, 64.0503, -32.5125)
+light_color = Color(1, 0.933333, 0.780392, 1)
+light_energy = 2.545
+shadow_enabled = true
+directional_shadow_max_distance = 143.0
+
+[node name="map" parent="." instance=ExtResource("2_louse")]
+
+[node name="Player" parent="." instance=ExtResource("2_oq2e2")]
+transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, -3.51466, 1.93455, 37.1678)
+collision_priority = 28.5
+
+[node name="RockBarrier" type="StaticBody3D" parent="."]
+collision_mask = 7
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RockBarrier"]
+transform = Transform3D(0.984777, 0, 0.17382, 0, 1, 0, -0.17382, 0, 0.984777, -0.838388, 15.9063, -12.7488)
+shape = SubResource("BoxShape3D_hdsvi")
+
+[node name="WindowReflectionProbe" type="ReflectionProbe" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0442262, 3.89101, 46.972)
+max_distance = 78.0
+size = Vector3(8.27033, 9.20856, 1.55691)
+enable_shadows = true
+
+[node name="Window2ReflectionProbe" type="ReflectionProbe" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.0106, 3.89101, 46.972)
+max_distance = 78.0
+size = Vector3(8.27033, 9.20856, 1.55691)
+enable_shadows = true
+
+[node name="TeleportTarget" parent="." instance=ExtResource("3_lu84n")]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 3.21826, 3.43409, 43.2117)
+
+[node name="Barrel" parent="." instance=ExtResource("4_lxys5")]
+
+[node name="Barrel2" parent="." instance=ExtResource("4_lxys5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.99426, 1.72731, 8.86921)
+
+[node name="Barrel3" parent="." instance=ExtResource("4_lxys5")]
+transform = Transform3D(0.747427, 0.664344, 0, -0.664344, 0.747427, 0, 0, 0, 1, -3.96876, 1.72731, 17.0828)
+
+[node name="TeleportTarget2" parent="." instance=ExtResource("3_lu84n")]
+transform = Transform3D(0.781292, 0, 0.624166, 0, 1, 0, -0.624166, 0, 0.781292, -2.88504, 0.981995, -3.42382)
+
+[node name="StaticBox" parent="." instance=ExtResource("5_kj3q2")]
+transform = Transform3D(1, 0, 0, 0, 0.871411, -0.490554, 0, 0.490554, 0.871411, -2, -2.25631, 30)
+size = Vector3(5, 10, 10)
+material = SubResource("StandardMaterial3D_rfv7g")
+
+[node name="Box" parent="." instance=ExtResource("6_68s8m")]
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box5" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.27608, 1.84503)
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box6" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.63013, 2.27608, 0)
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box7" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.63013, 2.27608, 1.84503)
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box8" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(0.906757, 0, -0.421653, 0, 1, 0, 0.421653, 0, 0.906757, 5.47914, 1.1092, -0.257656)
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box9" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(0.906757, 0, -0.421653, 0, 1, 0, 0.421653, 0, 0.906757, 4.70118, 1.1092, 1.41534)
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box10" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(0.906757, 0, -0.421653, 0, 1, 0, 0.421653, 0, 0.906757, 6.95727, 1.1092, 0.429692)
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box11" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(0.906757, 0, -0.421653, 0, 1, 0, 0.421653, 0, 0.906757, 6.17931, 1.1092, 2.10268)
+material = SubResource("StandardMaterial3D_l1be4")
+
+[node name="Box2" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.51923, 21.5823)
+mass = 400.0
+size = Vector3(2, 2, 1)
+material = SubResource("StandardMaterial3D_4ugao")
+
+[node name="Box3" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.55087, 21.5823)
+mass = 400.0
+size = Vector3(2, 2, 1)
+material = SubResource("StandardMaterial3D_4ugao")
+
+[node name="Box4" parent="." instance=ExtResource("6_68s8m")]
+transform = Transform3D(0.562848, 0.826524, 0.00777563, 0, 0.00940722, -0.999956, -0.82656, 0.562823, 0.00529484, 0, 1.12808, 25.1213)
+mass = 400.0
+size = Vector3(2, 2, 0.325)
+material = SubResource("StandardMaterial3D_4ugao")
+
+[node name="RaisingPlatform" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.41025, 18)
+
+[node name="Platform" type="AnimatableBody3D" parent="RaisingPlatform"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.09244, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RaisingPlatform/Platform"]
+shape = SubResource("CylinderShape3D_ecjhm")
+
+[node name="Smoothing" type="Node3D" parent="RaisingPlatform/Platform"]
+script = ExtResource("7_1ppd3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RaisingPlatform/Platform/Smoothing"]
+mesh = SubResource("CylinderMesh_xviyn")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="RaisingPlatform"]
+root_node = NodePath("../Platform")
+libraries = {
+"": SubResource("AnimationLibrary_doyr1")
+}
+
+[connection signal="ready" from="RaisingPlatform/AnimationPlayer" to="RaisingPlatform/AnimationPlayer" method="play" binds= ["riseandfall"]]
