@@ -75,3 +75,7 @@ activate={
 
 lights_and_shadows/directional_shadow/size=8192
 lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3
+lights_and_shadows/positional_shadow/soft_shadow_filter_quality=3
+reflections/reflection_atlas/reflection_size=512
+textures/decals/filter=5
+textures/light_projectors/filter=5

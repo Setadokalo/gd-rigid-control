@@ -1,12 +1,17 @@
-[gd_scene load_steps=20 format=3 uid="uid://bufdcwt3rhk4"]
+[gd_scene load_steps=25 format=3 uid="uid://bufdcwt3rhk4"]
 
 [ext_resource type="PackedScene" uid="uid://3572kk7dssru" path="res://maps/map.glb" id="2_louse"]
 [ext_resource type="PackedScene" uid="uid://d4bxmkgjuxpr4" path="res://player/Player.tscn" id="2_oq2e2"]
 [ext_resource type="PackedScene" uid="uid://nyh5uuab077x" path="res://Teleporter.tscn" id="3_lu84n"]
 [ext_resource type="PackedScene" uid="uid://dmid6b8or14f7" path="res://assets/barrel.tscn" id="4_lxys5"]
 [ext_resource type="PackedScene" uid="uid://cmjv0175hpojm" path="res://assets/static_box.tscn" id="5_kj3q2"]
+[ext_resource type="Texture2D" uid="uid://bnhyjyd1nxo5s" path="res://assets/prototype textures/Red/texture_09.png" id="6_7ggwq"]
 [ext_resource type="PackedScene" uid="uid://cwwog5aqflvgj" path="res://assets/box.tscn" id="6_68s8m"]
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="7_1ppd3"]
+[ext_resource type="Texture2D" uid="uid://dayo7titb174c" path="res://assets/prototype textures/Orange/texture_09.png" id="8_jkr7y"]
+[ext_resource type="Texture2D" uid="uid://igahyjrk7sbm" path="res://icon.svg" id="8_mdlbd"]
+[ext_resource type="Texture2D" uid="uid://gto7dy03jhns" path="res://assets/prototype textures/Green/texture_09.png" id="9_5hd6u"]
+[ext_resource type="Texture2D" uid="uid://bva4em4vuarsw" path="res://assets/prototype textures/Dark/texture_08.png" id="11_gg4yt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lnh4b"]
 
@@ -26,24 +31,29 @@ ssao_enabled = true
 size = Vector3(113.637, 32.8126, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rfv7g"]
-albedo_color = Color(0.403922, 0.0784314, 0.0784314, 1)
+albedo_texture = ExtResource("6_7ggwq")
 roughness = 0.5
+uv1_scale = Vector3(8, 8, 8)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l1be4"]
-albedo_color = Color(0.772549, 0.686275, 0, 1)
+albedo_texture = ExtResource("8_jkr7y")
 roughness = 0.75
+uv1_scale = Vector3(2, 2, 2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4ugao"]
-albedo_color = Color(0, 0.52549, 0.207843, 1)
+albedo_color = Color(0.443137, 0.698039, 0.454902, 1)
+albedo_texture = ExtResource("9_5hd6u")
 roughness = 0.25
+uv1_scale = Vector3(4, 4, 4)
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_ecjhm"]
 height = 0.2
 radius = 2.0
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mghpj"]
-albedo_color = Color(0.12549, 0.12549, 0.12549, 1)
+albedo_texture = ExtResource("11_gg4yt")
 roughness = 0.5
+uv1_scale = Vector3(4, 4, 4)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_xviyn"]
 material = SubResource("StandardMaterial3D_mghpj")
@@ -92,18 +102,6 @@ collision_mask = 7
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RockBarrier"]
 transform = Transform3D(0.984777, 0, 0.17382, 0, 1, 0, -0.17382, 0, 0.984777, -0.838388, 15.9063, -12.7488)
 shape = SubResource("BoxShape3D_hdsvi")
-
-[node name="WindowReflectionProbe" type="ReflectionProbe" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0442262, 3.89101, 46.972)
-max_distance = 78.0
-size = Vector3(8.27033, 9.20856, 1.55691)
-enable_shadows = true
-
-[node name="Window2ReflectionProbe" type="ReflectionProbe" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.0106, 3.89101, 46.972)
-max_distance = 78.0
-size = Vector3(8.27033, 9.20856, 1.55691)
-enable_shadows = true
 
 [node name="TeleportTarget" parent="." instance=ExtResource("3_lu84n")]
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 3.21826, 3.43409, 43.2117)
@@ -177,7 +175,8 @@ material = SubResource("StandardMaterial3D_4ugao")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.41025, 18)
 
 [node name="Platform" type="AnimatableBody3D" parent="RaisingPlatform"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.09244, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.47023, 0)
+collision_priority = 0.135
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RaisingPlatform/Platform"]
 shape = SubResource("CylinderShape3D_ecjhm")
@@ -186,12 +185,27 @@ shape = SubResource("CylinderShape3D_ecjhm")
 script = ExtResource("7_1ppd3")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="RaisingPlatform/Platform/Smoothing"]
+layers = 2
 mesh = SubResource("CylinderMesh_xviyn")
+
+[node name="TeleportTarget3" parent="RaisingPlatform/Platform" instance=ExtResource("3_lu84n")]
+transform = Transform3D(0.781292, 0, 0.624166, 0, 1, 0, -0.624166, 0, 0.781292, 0, 2, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="RaisingPlatform"]
 root_node = NodePath("../Platform")
 libraries = {
 "": SubResource("AnimationLibrary_doyr1")
 }
+
+[node name="Decal" type="Decal" parent="."]
+transform = Transform3D(-0.158726, -0.0031417, -0.987318, 0.000498688, -0.999995, 0.00310174, -0.987323, -2.69627e-08, 0.158727, 0.3218, 0.166089, 17.1797)
+size = Vector3(2, 0.25, 2)
+texture_albedo = ExtResource("8_mdlbd")
+upper_fade = 0.00027335
+lower_fade = 0.000237965
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.743145, 0.460599, -0.48537, 0, 0.725374, 0.688355, 0.669131, 0.511547, -0.539058, -8, 15, 0)
+current = true
 
 [connection signal="ready" from="RaisingPlatform/AnimationPlayer" to="RaisingPlatform/AnimationPlayer" method="play" binds= ["riseandfall"]]

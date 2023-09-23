@@ -125,7 +125,6 @@ radius = 0.890656
 [node name="PassiveParticles" type="GPUParticles3D" parent="."]
 amount = 512
 visibility_aabb = AABB(-2.06225, -1.96406, -2.05571, 4.12451, 3.92811, 4.11142)
-local_coords = true
 draw_order = 3
 process_material = SubResource("ParticleProcessMaterial_sanlq")
 draw_pass_1 = SubResource("QuadMesh_dbgku")
@@ -134,7 +133,6 @@ draw_pass_1 = SubResource("QuadMesh_dbgku")
 emitting = false
 amount = 512
 visibility_aabb = AABB(-2.0659, -1.96284, -2.03454, 4.13182, 3.92568, 4.06909)
-local_coords = true
 draw_order = 3
 process_material = SubResource("ParticleProcessMaterial_6tv6v")
 draw_pass_1 = SubResource("QuadMesh_dbgku")

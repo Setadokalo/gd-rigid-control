@@ -1,13 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://dmid6b8or14f7"]
+[gd_scene load_steps=6 format=3 uid="uid://dmid6b8or14f7"]
 
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="1_q0utw"]
+[ext_resource type="Texture2D" uid="uid://dndju4o3qewm6" path="res://assets/prototype textures/Purple/texture_09.png" id="2_h2glr"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_fguw4"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g8vlv"]
+albedo_texture = ExtResource("2_h2glr")
+uv1_scale = Vector3(4, 4, 4)
+
 [sub_resource type="CylinderMesh" id="CylinderMesh_p0mw6"]
+material = SubResource("StandardMaterial3D_g8vlv")
 
 [node name="Barrel" type="RigidBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.96876, -9.67786)
 collision_mask = 7
 mass = 200.0
 

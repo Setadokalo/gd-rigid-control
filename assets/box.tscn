@@ -5,11 +5,11 @@
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_40ubu"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_8iq1x"]
-size = Vector3(2, 2, 0.4)
+[sub_resource type="BoxShape3D" id="BoxShape3D_ksaw7"]
+size = Vector3(2, 2, 0.325)
 
-[sub_resource type="BoxMesh" id="BoxMesh_yrr4b"]
-size = Vector3(2, 2, 0.4)
+[sub_resource type="BoxMesh" id="BoxMesh_ientu"]
+size = Vector3(2, 2, 0.325)
 
 [node name="Box" type="RigidBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.27608, 0)
@@ -19,12 +19,12 @@ script = ExtResource("1_680kp")
 material = SubResource("StandardMaterial3D_40ubu")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("BoxShape3D_8iq1x")
+shape = SubResource("BoxShape3D_ksaw7")
 
 [node name="Smoothing" type="Node3D" parent="."]
 script = ExtResource("2_ij8q8")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Smoothing"]
 material_override = SubResource("StandardMaterial3D_40ubu")
-mesh = SubResource("BoxMesh_yrr4b")
+mesh = SubResource("BoxMesh_ientu")
 skeleton = NodePath("../..")
