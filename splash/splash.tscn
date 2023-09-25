@@ -15,6 +15,7 @@ stream = ExtResource("1_gxv4v")
 autoplay = true
 expand = true
 script = ExtResource("2_bguye")
+main_scene_path = "res://pixelmain.tscn"
 must_play_entire_splash = false
 
 [node name="TextureRect" type="TextureRect" parent="."]

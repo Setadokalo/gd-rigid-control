@@ -6,7 +6,9 @@ const SPEED := 5.0
 const JUMP_VELOCITY := 4.5
 
 const ROT_LIMIT: float = PI / 2.0 - 0.01
-const HEAD_ROT_LIMIT := deg_to_rad(30)
+const HEAD_ROT_LIMIT: float = deg_to_rad(30)
+
+const ISOMETRIC_MODE: bool = true
 
 @export var jump_strength := 4.0
 
@@ -15,15 +17,9 @@ const HEAD_ROT_LIMIT := deg_to_rad(30)
 @onready var spawn_point := global_position
 # references to children, using a child node export var
 # so the references aren't fragile
-@onready var _head: Node3D = $References.head
-@onready var _fps_camera: Camera3D = $References.fps_camera
-@onready var _tps_camera: Camera3D = $References.tps_camera
 @onready var _death_player: AnimationPlayer = $References.death_player
 @onready var _smoothing_nodes: Array[Smoothing] = $References.smoothing_nodes
 
-
-## Get the gravity from the project settings to be synced with RigidBody nodes.
-#var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var velocity := Vector3()
 
 var _mouse_motion := Vector2()
@@ -31,36 +27,19 @@ var _is_on_floor := false
 var _jump_grace := 0.0
 
 func _ready():
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	get_tree().root.physics_object_picking = true
 	Globals.player = self
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		_mouse_motion += event.relative
-	else:
-		if event.is_action_pressed("toggle_perspective"):
-			if _fps_camera.current:
-				_tps_camera.current = true
-			else:
-				_fps_camera.current = true
 
 func _process(_delta: float):
-	get_tree().root.warp_mouse(get_tree().root.size / 2.0)
-	var cam_rot: float = _head.rotation.x - deg_to_rad(_mouse_motion.y * 0.1)
-	cam_rot = clamp(cam_rot, -ROT_LIMIT, ROT_LIMIT)
-	_fps_camera.rotation.x = cam_rot
-	_head.rotation.x = cam_rot
-	_mouse_motion.y = 0.0
-	_head.rotation.y -= deg_to_rad(_mouse_motion.x * 0.1)
-	_fps_camera.rotation.y = rotation.y + _head.rotation.y
-	_mouse_motion.x = 0.0
-	
 	var space_state := get_world_3d().direct_space_state
-	var mousepos: Vector2 = get_viewport().size * 0.5
+	var mousepos: Vector2 = get_viewport().get_mouse_position()
 
-	var origin := _fps_camera.global_position
-	var end := origin + _fps_camera.project_ray_normal(mousepos) * 150.0
+	var origin := get_viewport().get_camera_3d().global_position
+	var end := origin + get_viewport().get_camera_3d().project_ray_normal(mousepos) * 150.0
 	# layer that selectable objects lie on
 	const SELECTABLE_MASK := 0b1000_0000_0000_0000_0000_0000
 	# layer that occluding objects lie on
@@ -73,37 +52,42 @@ func _process(_delta: float):
 		if result.collider.collision_mask & SELECTABLE_MASK != 0:
 			result.collider.is_hovered_this_frame()
 
+func get_input_dir() -> Vector3:
+	var cam := get_viewport().get_camera_3d()
+	var facing_z: Vector3 
+	if not ISOMETRIC_MODE:
+		var vec_to_cam := cam.global_position - global_position
+		vec_to_cam.y = 0.0
+		facing_z = vec_to_cam.normalized()
+	else:
+		facing_z = (cam.global_transform.basis.z * Vector3(1.0, 0.0, 1.0)).normalized()
+	var facing_y := Vector3.UP
+	var facing_x := facing_z.rotated(facing_y, PI/2.0)
+	var facing_dir := Basis(facing_x, facing_y, facing_z)
+
+	# Get the input direction and handle the movement/deceleration.
+	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+	return (facing_dir * Vector3(input_dir.x, 0, input_dir.y)).limit_length()
+
 func _physics_process(delta: float) -> void:
 	velocity = linear_velocity
+	var flat_vel = linear_velocity * Vector3(1.0, 0.0, 1.0)
 	# animation
 	_is_on_floor = is_on_floor()
-	# rotate the body to keep the _head from having an unnatural angle.
-	if _head.rotation.y > HEAD_ROT_LIMIT:
-		rotation.y += _head.rotation.y - HEAD_ROT_LIMIT
-		_head.rotation.y = HEAD_ROT_LIMIT
-	elif _head.rotation.y < -HEAD_ROT_LIMIT:
-		rotation.y += _head.rotation.y + HEAD_ROT_LIMIT
-		_head.rotation.y = -HEAD_ROT_LIMIT
-	# rotate the body towards linear_velocity
-	if not (linear_velocity * Vector3(1.0, 0.0, 1.0)).is_zero_approx():
-		# how much the head is rotated along with the player
-		var head_rot := _head.rotation.y + rotation.y
-		rotation.y = lerp_angle(
-			rotation.y, 
-			Vector3.FORWARD.signed_angle_to(linear_velocity * Vector3(1, 0, 1), Vector3.UP), 
-			clamp(delta * linear_velocity.length(), 0.0, 1.0)
+	if flat_vel.length_squared() > 0.1:
+		global_transform.basis = global_transform.basis.slerp(
+			global_transform.looking_at(position + flat_vel).basis, 
+			delta * flat_vel.length() * 4.0
 		)
-		# restore the head's "global" (to the parent) rotation
-		_head.rotation.y = head_rot - rotation.y
 	
 	# object interaction
 	
 	if Input.is_action_just_pressed("activate"):
 		var space_state := get_world_3d().direct_space_state
-		var mousepos: Vector2 = get_viewport().size * 0.5
-
-		var origin := _fps_camera.global_position
-		var end := origin + _fps_camera.project_ray_normal(mousepos) * 150.0
+		var camera: Camera3D = get_viewport().get_camera_3d()
+		var mousepos: Vector2 = get_viewport().get_mouse_position()
+		var origin := camera.global_position
+		var end := origin + camera.project_ray_normal(mousepos) * 150.0
 		# layer that selectable objects lie on
 		const SELECTABLE_MASK := 0b1000_0000_0000_0000_0000_0000
 		# layer that occluding objects lie on
@@ -123,15 +107,12 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("jump") and is_on_floor():
 		_jump_grace = 0.1
 		apply_central_impulse(Vector3(0.0, jump_strength * mass, 0.0))
-
-	var facing_dir := transform.basis.rotated(Vector3.UP, _head.rotation.y)
-
-	# Get the input direction and handle the movement/deceleration.
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var direction := (facing_dir * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	
+	var direction = get_input_dir()
+	
 	var speed_factor := 4.0
 	if direction and not is_on_floor() \
-		and (direction * SPEED).length_squared() > (linear_velocity * Vector3(1.0, 0.0, 1.0)).length_squared():
+		and (direction * SPEED).length_squared() > (flat_vel).length_squared():
 		speed_factor = 0.5
 	# deceleration
 	elif not direction:
@@ -152,7 +133,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	var gravity = Vector3.ZERO
 	var fl_nml = floor_normal()
 	if fl_nml != Vector3.ZERO:
-		gravity = state.total_gravity.length() * -fl_nml * state.step * 0.05
+		gravity = state.total_gravity.length() * -fl_nml * state.step * 0.25
 	else:
 		gravity = state.total_gravity * state.step
 	velocity += gravity
@@ -187,23 +168,11 @@ func floor_normal() -> Vector3:
 				return col_nml
 	return Vector3.ZERO
 
-#func wall_normal(vel: Vector3, delta: float) -> Vector3:
-#	$WallCast.target_position = vel * delta
-#	$WallCast.force_shapecast_update()
-#	if $WallCast.is_colliding():
-#		var nml_total = Vector3.ZERO
-#		for col_idx in $WallCast.get_collision_count():
-#			nml_total += $WallCast.get_collision_normal(col_idx)
-#		return (nml_total / float($WallCast.get_collision_count())).normalized()
-#	return Vector3.ZERO
-
 const STAIR_LENGTH: float = 0.1
-const STAIR_HEIGHT: float = 0.35
+const STAIR_HEIGHT: float = 0.75
 
 func try_stair_teleport(delta: float, gravity: Vector3) -> void:
-	var facing_dir := transform.basis.rotated(Vector3.UP, _head.rotation.y)
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var direction := (facing_dir * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var direction := get_input_dir()
 	var step_test_vel = velocity + direction * STAIR_LENGTH * 2.0
 	var move_rslts = KinematicCollision3D.new()
 	if not test_move(global_transform, step_test_vel * delta, move_rslts):
@@ -260,61 +229,3 @@ func teleport(dest: Vector3) -> void:
 	global_position = dest
 	for node in _smoothing_nodes:
 		node.teleport()
-
-# Old implementation, works bad
-#
-#func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-	#var delta := state.step
-	#_jump_grace -= delta
-	#linear_velocity = state.linear_velocity
-	## Add the gravity.
-	##if not is_on_floor():
-	#linear_velocity.y -= gravity * delta
-#
-	## Handle Jump.
-	#if Input.is_action_just_pressed("jump") and is_on_floor():
-		#_is_on_floor = false
-		#_jump_grace = 0.1
-		#linear_velocity.y = JUMP_VELOCITY
-#
-	#var facing_dir := transform.basis.rotated(Vector3.UP, _head.rotation.y)
-#
-	## Get the input direction and handle the movement/deceleration.
-	#var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	#var direction := (facing_dir * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	#var speed_factor := 4.0
-	#if direction and not is_on_floor() \
-		#and (direction * SPEED).length_squared() > (linear_velocity * Vector3(1.0, 0.0, 1.0)).length_squared():
-		#speed_factor = 1.0
-	## deceleration
-	#elif not direction:
-		#speed_factor = 2.0 if is_on_floor() else 0.5
-	#var old_y := linear_velocity.y
-	#linear_velocity = linear_velocity.lerp(direction * SPEED, clamp(speed_factor * SPEED * delta, 0.0, 1.0))
-	#linear_velocity.y = old_y
-	## if we were on the floor last frame snap to the floor this frame
-	#if is_on_floor():
-		#var collision: KinematicCollision3D = move_and_collide(
-			#Vector3(0.0, -0.2, 0.0), 
-			#true, 
-			#0.001, 
-			#true
-		#)
-		#if collision:
-			#state.transform.origin += collision.get_travel()
-		#else:
-			#_is_on_floor = false
-	#elif _jump_grace <= 0.0:
-		## test for floor collision
-		#_is_on_floor = false
-		#var collision: KinematicCollision3D = move_and_collide(
-			#Vector3(0.0, -gravity * delta, 0.0), 
-			#true, 
-			#0.001, 
-			#true,
-			#5)
-		#if collision:
-			#for cidx in collision.get_collision_count():
-				#if collision.get_normal(cidx).angle_to(Vector3.UP) < deg_to_rad(30.0):
-					#_is_on_floor = true
-		#state.linear_velocity = linear_velocity

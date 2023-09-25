@@ -1,8 +1,7 @@
-[gd_scene load_steps=27 format=3 uid="uid://d4bxmkgjuxpr4"]
+[gd_scene load_steps=31 format=3 uid="uid://d4bxmkgjuxpr4"]
 
 [ext_resource type="Script" path="res://player/Player.gd" id="1_lidto"]
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="2_3eixf"]
-[ext_resource type="Script" path="res://player/LazyFollow.gd" id="3_8jneo"]
 [ext_resource type="Script" path="res://player/Visuals.gd" id="4_cbrol"]
 [ext_resource type="Texture2D" uid="uid://bcm66sohtbqsc" path="res://assets/textures/ui_toppanel.png" id="5_4qe50"]
 [ext_resource type="Script" path="res://player/DataTracker.gd" id="6_god2y"]
@@ -14,10 +13,6 @@ friction = 0.0
 [sub_resource type="GDScript" id="GDScript_m4eab"]
 script/source = "extends Node
 
-@export var head: Node3D
-@export var fps_camera: Camera3D
-@export var tps_camera: Camera3D
-
 @export var death_player: AnimationPlayer
 
 @export var smoothing_nodes: Array[Smoothing]
@@ -26,25 +21,43 @@ script/source = "extends Node
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_64cf0"]
 radius = 0.36
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_w8xdq"]
-top_radius = 0.0
-bottom_radius = 0.035
-height = 0.8
-radial_segments = 4
-
-[sub_resource type="SeparationRayShape3D" id="SeparationRayShape3D_jg8oh"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sna7x"]
+albedo_color = Color(1, 0.537255, 0.290196, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_t06nd"]
+material = SubResource("StandardMaterial3D_sna7x")
 size = Vector3(0.522, 0.294, 0.266)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7rdfm"]
+albedo_color = Color(1, 0.537255, 0.290196, 1)
+
 [sub_resource type="BoxMesh" id="BoxMesh_ibbvn"]
+material = SubResource("StandardMaterial3D_7rdfm")
 size = Vector3(0.473, 0.325, 0.245)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trulo"]
+albedo_color = Color(0.298039, 0.356863, 0.678431, 1)
+
 [sub_resource type="BoxMesh" id="BoxMesh_jahkv"]
+material = SubResource("StandardMaterial3D_trulo")
 size = Vector3(0.2, 0.822, 0.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_5lvof"]
-size = Vector3(0.142, 0.853, 0.2)
+size = Vector3(0.142, 0.2, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_soswt"]
+albedo_color = Color(1, 0.537255, 0.290196, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_a6hyc"]
+material = SubResource("StandardMaterial3D_soswt")
+size = Vector3(0.161, 0.198, 0.231)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2uula"]
+size = Vector3(0.142, 0.414, 0.201)
+
+[sub_resource type="BoxMesh" id="BoxMesh_2eywj"]
+material = SubResource("StandardMaterial3D_soswt")
+size = Vector3(0.161, 0.198, 0.231)
 
 [sub_resource type="BoxMesh" id="BoxMesh_l7dxn"]
 size = Vector3(0.309, 0.397, 0.305)
@@ -53,11 +66,10 @@ size = Vector3(0.309, 0.397, 0.305)
 bg_color = Color(1, 1, 1, 1)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g1f1c"]
-content_margin_left = 16.0
+content_margin_left = 4.0
 texture = ExtResource("5_4qe50")
-texture_margin_left = 16.0
-texture_margin_right = 64.0
-region_rect = Rect2(0, 0, 256, 64)
+texture_margin_right = 8.0
+region_rect = Rect2(0, 0, 32, 8)
 
 [sub_resource type="GDScript" id="GDScript_mr14b"]
 script/source = "extends Label
@@ -138,52 +150,16 @@ continuous_cd = true
 lock_rotation = true
 script = ExtResource("1_lidto")
 
-[node name="References" type="Node" parent="." node_paths=PackedStringArray("head", "fps_camera", "tps_camera", "death_player", "smoothing_nodes")]
+[node name="References" type="Node" parent="." node_paths=PackedStringArray("death_player", "smoothing_nodes")]
 script = SubResource("GDScript_m4eab")
-head = NodePath("../Head")
-fps_camera = NodePath("../Smoothing/FirstPersonCamera/Camera")
-tps_camera = NodePath("../SmoothedVisuals/3rdPersonCamera/SpringArm/Camera")
 death_player = NodePath("../GUI/DeathPlayer")
-smoothing_nodes = [NodePath("../Smoothing"), NodePath("../SmoothedVisuals"), NodePath("../Head/Smoothing")]
+smoothing_nodes = [NodePath("../SmoothedVisuals"), NodePath("")]
 
 [node name="CapsuleShape" type="CollisionShape3D" parent="."]
 shape = SubResource("CylinderShape3D_64cf0")
 
-[node name="Smoothing" type="Node3D" parent="."]
-script = ExtResource("2_3eixf")
-target = NodePath("..")
-flags = 3
-
-[node name="FirstPersonCamera" type="Node3D" parent="Smoothing"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.823574, 0)
-
-[node name="Camera" type="Camera3D" parent="Smoothing/FirstPersonCamera"]
-cull_mask = 1047551
-current = true
-
-[node name="DebugVisual" type="MeshInstance3D" parent="Smoothing/FirstPersonCamera/Camera"]
-transform = Transform3D(0.707107, 1.28028e-08, 0.707107, 0.707107, -3.09086e-08, -0.707107, 1.28028e-08, 1, -3.09086e-08, 0, 0, -0.390881)
-layers = 1024
-mesh = SubResource("CylinderMesh_w8xdq")
-
 [node name="SmoothedVisuals" type="Node3D" parent="."]
 script = ExtResource("2_3eixf")
-
-[node name="3rdPersonCamera" type="Node3D" parent="SmoothedVisuals" node_paths=PackedStringArray("follow")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.746158, 0.0364608)
-top_level = true
-script = ExtResource("3_8jneo")
-follow = NodePath("../../Head")
-rotation_follow_speed = 20.0
-
-[node name="SpringArm" type="SpringArm3D" parent="SmoothedVisuals/3rdPersonCamera"]
-transform = Transform3D(1, 0, 0, 0, 0.999925, -0.012217, 0, 0.012217, 0.999925, 0, 0.694599, -0.0364608)
-collision_mask = 251
-shape = SubResource("SeparationRayShape3D_jg8oh")
-spring_length = 2.5
-
-[node name="Camera" type="Camera3D" parent="SmoothedVisuals/3rdPersonCamera/SpringArm"]
-transform = Transform3D(1, 0, 0, 0, 0.969872, 0.243615, 0, -0.243615, 0.969872, 0, 0, 2.486)
 
 [node name="Visuals" type="Node3D" parent="SmoothedVisuals"]
 script = ExtResource("4_cbrol")
@@ -226,34 +202,58 @@ skeleton = NodePath("../../../..")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.358103, 0.381739, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmR"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.337617, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.202294, 0)
 layers = 1024
 gi_mode = 2
 mesh = SubResource("BoxMesh_5lvof")
 skeleton = NodePath("../../../..")
+
+[node name="Mesh2" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmR"]
+layers = 1024
+gi_mode = 2
+mesh = SubResource("BoxMesh_a6hyc")
+skeleton = NodePath("../../../..")
+
+[node name="ArmRLower" type="Node3D" parent="SmoothedVisuals/Visuals/ArmR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.306, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmR/ArmRLower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18766, 0)
+mesh = SubResource("BoxMesh_2uula")
 
 [node name="ArmL" type="Node3D" parent="SmoothedVisuals/Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.358, 0.382, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmL"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.337617, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.202232, 0)
 layers = 1024
 gi_mode = 2
 mesh = SubResource("BoxMesh_5lvof")
 skeleton = NodePath("../../../..")
 
-[node name="Head" type="Node3D" parent="."]
+[node name="Mesh3" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmL"]
+layers = 1024
+gi_mode = 2
+mesh = SubResource("BoxMesh_2eywj")
+skeleton = NodePath("../../../..")
+
+[node name="ArmLLower" type="Node3D" parent="SmoothedVisuals/Visuals/ArmL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.306661, 0)
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmL/ArmLLower"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.187, 0)
+mesh = SubResource("BoxMesh_2uula")
+skeleton = NodePath("../../../ArmR/ArmRLower")
+
+[node name="Head" type="Node3D" parent="SmoothedVisuals/Visuals"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.579376, 0)
 
-[node name="Smoothing" type="Node3D" parent="Head"]
-script = ExtResource("2_3eixf")
-
-[node name="Mesh" type="MeshInstance3D" parent="Head/Smoothing"]
+[node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/Head"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.152, -0.036)
 layers = 1024
 gi_mode = 2
 mesh = SubResource("BoxMesh_l7dxn")
-skeleton = NodePath("../../..")
+skeleton = NodePath("../../../..")
 
 [node name="GUI" type="Control" parent="."]
 layout_mode = 3
@@ -276,27 +276,26 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_fxoom")
 
 [node name="TopBarGUI" type="PanelContainer" parent="GUI"]
+visible = false
 layout_mode = 1
-anchors_preset = -1
-anchor_right = 0.4
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 114.0
-offset_bottom = 65.0
+offset_right = 20.0
+offset_bottom = 18.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_g1f1c")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GUI/TopBarGUI"]
 layout_mode = 2
+theme_override_constants/separation = 1
 
 [node name="Label" type="Label" parent="GUI/TopBarGUI/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 21
+theme_override_font_sizes/font_size = 12
 text = "FPS:"
 script = SubResource("GDScript_mr14b")
 
 [node name="Label2" type="Label" parent="GUI/TopBarGUI/VBoxContainer" node_paths=PackedStringArray("target")]
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 script = ExtResource("6_god2y")
 target = NodePath("../../../..")
 properties = Array[String](["linear_velocity", "_is_on_floor"])
@@ -308,7 +307,8 @@ libraries = {
 "": SubResource("AnimationLibrary_qmbgo")
 }
 
-[node name="TextureRect" type="TextureRect" parent="GUI"]
+[node name="Crosshair" type="TextureRect" parent="GUI"]
+visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
