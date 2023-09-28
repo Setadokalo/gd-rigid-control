@@ -153,7 +153,7 @@ script = ExtResource("1_lidto")
 [node name="References" type="Node" parent="." node_paths=PackedStringArray("death_player", "smoothing_nodes")]
 script = SubResource("GDScript_m4eab")
 death_player = NodePath("../GUI/DeathPlayer")
-smoothing_nodes = [NodePath("../SmoothedVisuals"), NodePath("")]
+smoothing_nodes = [NodePath("../SmoothedVisuals"), null]
 
 [node name="CapsuleShape" type="CollisionShape3D" parent="."]
 shape = SubResource("CylinderShape3D_64cf0")

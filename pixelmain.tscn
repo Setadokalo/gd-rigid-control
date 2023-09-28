@@ -1,4 +1,4 @@
-[gd_scene load_steps=55 format=3 uid="uid://cux57veoyv20n"]
+[gd_scene load_steps=56 format=3 uid="uid://cux57veoyv20n"]
 
 [ext_resource type="Shader" path="res://palettizer.gdshader" id="1_kvqkt"]
 [ext_resource type="Script" path="res://pixelmain.gd" id="1_qnvca"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://HidingOccluder.gd" id="5_6adb1"]
 [ext_resource type="Texture2D" uid="uid://bp14sqe0smg2d" path="res://assets/textures/leaf.png" id="9_5es0o"]
 [ext_resource type="Shader" path="res://pixel_lighting.gdshader" id="10_1w82n"]
+[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="11_u2m5a"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ybjru"]
 shader = ExtResource("1_kvqkt")
@@ -528,6 +529,7 @@ size = Vector2i(480, 270)
 render_target_update_mode = 4
 
 [node name="Node3D" type="Node3D" parent="SubViewport" node_paths=PackedStringArray("target_node")]
+transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, -2.11773, 0, 2.63583)
 script = ExtResource("2_qxyml")
 follow_distance = 5.0
 follow_accel = 0.6
@@ -536,11 +538,11 @@ follow_max_speed = 20.0
 target_node = NodePath("../Player")
 
 [node name="Camera3D" type="Camera3D" parent="SubViewport/Node3D"]
-transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866026, 0.5, -0.707107, -0.353553, 0.612372, 30, 25, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 50)
 projection = 1
 current = true
 fov = 42.0
-size = 20.0
+size = 10.0
 near = 0.25
 far = 1000.0
 
@@ -759,7 +761,7 @@ flip_faces = true
 size = Vector3(13.922, 14.176, 13.877)
 
 [node name="Player" parent="SubViewport" instance=ExtResource("5_3vbd8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.970568, 1.89542, 5.50316)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.970568, 1.47451, 5.50316)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport"]
 transform = Transform3D(0.986544, 0.163498, 0, -0.163498, 0.986544, 0, 0, 0, 1, 9.11736, 1.44309, 0)
@@ -821,3 +823,6 @@ mesh = SubResource("BoxMesh_qkjsv")
 [node name="MeshInstance3D4" type="MeshInstance3D" parent="SubViewport"]
 transform = Transform3D(-0.00668172, 0.940187, -0.340592, -0.647038, -0.263754, -0.715385, -0.762429, 0.215596, 0.6101, 13.8814, 2.72915, 9.20271)
 mesh = SubResource("BoxMesh_s5mcx")
+
+[node name="botman" parent="SubViewport" instance=ExtResource("11_u2m5a")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -2.10731, 1.3993, 6.00493)
