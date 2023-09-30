@@ -34,5 +34,8 @@ func _on_finished_playing() -> void:
 
 func _on_finished_loading(scene: PackedScene) -> void:
 	var tween = get_tree().create_tween()
+	tween.tween_interval(0.25)
 	tween.tween_property(self, ^"modulate", Color(0.0, 0.0, 0.0, 1.0), 0.5)
-	tween.tween_callback(func(): get_tree().change_scene_to_packed(scene))
+	tween.tween_callback(func(): 
+		get_tree().root.unresizable = should_be_resizable
+		get_tree().change_scene_to_packed(scene))

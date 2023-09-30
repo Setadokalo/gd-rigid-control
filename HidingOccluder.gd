@@ -6,6 +6,18 @@ extends CSGBox3D
 var _fade_level := 0.0
 var _fade_frames := 0
 
+func _ready() -> void:
+	await get_tree().process_frame
+	crawl_children_make_unique(self)
+
+
+func crawl_children_make_unique(node) -> void:
+	node.material = node.material.duplicate()
+	node.material.set_shader_parameter("fade", pow(_fade_level, fade_curve))
+	for child in node.get_children():
+		if child.get("material") is ShaderMaterial:
+			crawl_children_make_unique(child)
+
 
 func _process(delta: float) -> void:
 	if _fade_frames > 0:

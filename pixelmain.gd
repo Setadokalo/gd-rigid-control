@@ -1,6 +1,9 @@
-extends SubViewportContainer
+extends Node
 
 func _ready() -> void:
 	await get_tree().process_frame
-	DebugDraw2D.create_fps_graph("FPS").frame_time_mode = false
-	DebugDraw2D.create_fps_graph("SPF").corner = DebugDrawGraph.POSITION_LEFT_TOP
+	var spf = DebugDraw2D.create_fps_graph("SPF")
+	spf.offset = Vector2i(2, 2)
+	spf.size = Vector2i(96, 48)
+	spf.text_size = 6
+	spf.show_text_flags = DebugDrawGraph.TEXT_ALL & (~DebugDrawGraph.TEXT_CURRENT)

@@ -1,9 +1,9 @@
 extends Node3D
 
 @export var follow_distance := 10.0
+@export var follow_velocity_modifier := 1.0
 @export var follow_accel := 20.0
 @export var follow_decel := 20.0
-@export var follow_max_speed := 3.0
 
 @export var target_node: Node3D
 
@@ -42,22 +42,25 @@ func rotate_view(amount: float) -> void:
 	_oldtween = tween
 
 func _input(event: InputEvent) -> void:
+	event.get_rid()
 	if event.is_action_pressed("rotate_cam_left"):
 		rotate_view(-PI/2.0)
 	if event.is_action_pressed("rotate_cam_right"):
 		rotate_view(PI/2.0)
 
 func _process(delta: float) -> void:
-	var targetpos := target_node.global_position
+	var targetpos: Vector3 = target_node.global_position + target_node.get("linear_velocity") * follow_velocity_modifier
+	var tvel = target_node.get("linear_velocity")
 	if global_position.distance_to(targetpos) > follow_distance:
-		_velocity = _velocity.lerp(global_position.direction_to(targetpos) * follow_max_speed, delta * follow_accel)
-		var tvel = target_node.get("linear_velocity")
-		if tvel != null:
-			_velocity = _velocity.limit_length(max(tvel.length(), 2.0))
+		_velocity = _velocity.lerp(
+			(global_position.direction_to(targetpos) * tvel.length() * 1.5)
+				.limit_length(max(tvel.length() * 1.5, 2.0)),
+			delta * follow_accel * max(1.0, global_position.distance_to(targetpos) * 0.2))
 	else:
-		_velocity = _velocity.lerp(Vector3.ZERO, delta * follow_decel)
+		_velocity = _velocity.lerp(tvel * Vector3(1.0, 0.0, 1.0), delta * follow_decel)
 	global_position += _velocity * delta
 	
+	targetpos = target_node.global_position
 	if $Camera3D.projection == Camera3D.PROJECTION_PERSPECTIVE:
 		$RayCast3D.position = $Camera3D.position
 		var localized = $RayCast3D.global_transform.inverse() * targetpos

@@ -1,0 +1,116 @@
+[gd_scene load_steps=13 format=3 uid="uid://datvlpoheensh"]
+
+[ext_resource type="Texture2D" uid="uid://j5yjn2dly3hn" path="res://assets/prototype textures/Light/texture_06.png" id="1_q8lku"]
+[ext_resource type="Script" path="res://HidingOccluder.gd" id="2_iwlv8"]
+
+[sub_resource type="Shader" id="Shader_ymq6p"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.1.1.stable's StandardMaterial3D.
+
+shader_type spatial;
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color,filter_nearest,repeat_enable;
+
+uniform float fade: hint_range(0, 1);
+uniform sampler2D fade_tex : filter_nearest,repeat_enable;
+
+void fragment() {
+	if ((CAMERA_VISIBLE_LAYERS & uint(524288)) != uint(0) && fade > texture(fade_tex, SCREEN_UV).r) discard;
+	vec2 base_uv = UV;
+	vec4 albedo_tex = texture(texture_albedo,base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_n1qa5"]
+noise_type = 0
+seed = 11545
+frequency = 1.0
+fractal_octaves = 1
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_5pj52"]
+generate_mipmaps = false
+noise = SubResource("FastNoiseLite_n1qa5")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y1r8j"]
+render_priority = 0
+shader = SubResource("Shader_ymq6p")
+shader_parameter/albedo = Color(0.596078, 0.596078, 0.596078, 1)
+shader_parameter/fade = 0.0
+shader_parameter/texture_albedo = ExtResource("1_q8lku")
+shader_parameter/fade_tex = SubResource("NoiseTexture2D_5pj52")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0g1yd"]
+render_priority = 0
+shader = SubResource("Shader_ymq6p")
+shader_parameter/albedo = Color(0.168627, 0.168627, 0.168627, 1)
+shader_parameter/fade = 0.0
+shader_parameter/texture_albedo = ExtResource("1_q8lku")
+shader_parameter/fade_tex = SubResource("NoiseTexture2D_5pj52")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y81c3"]
+render_priority = 0
+shader = SubResource("Shader_ymq6p")
+shader_parameter/albedo = Color(0.168627, 0.168627, 0.168627, 1)
+shader_parameter/fade = 0.0
+shader_parameter/texture_albedo = ExtResource("1_q8lku")
+shader_parameter/fade_tex = SubResource("NoiseTexture2D_5pj52")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3f3dw"]
+render_priority = 0
+shader = SubResource("Shader_ymq6p")
+shader_parameter/albedo = Color(0.168627, 0.168627, 0.168627, 1)
+shader_parameter/fade = 0.0
+shader_parameter/texture_albedo = ExtResource("1_q8lku")
+shader_parameter/fade_tex = SubResource("NoiseTexture2D_5pj52")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_11w5c"]
+render_priority = 0
+shader = SubResource("Shader_ymq6p")
+shader_parameter/albedo = Color(0.168627, 0.168627, 0.168627, 1)
+shader_parameter/fade = 0.0
+shader_parameter/texture_albedo = ExtResource("1_q8lku")
+shader_parameter/fade_tex = SubResource("NoiseTexture2D_5pj52")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ctaxp"]
+albedo_color = Color(0.152941, 0.152941, 0.152941, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6n407"]
+material = SubResource("StandardMaterial3D_ctaxp")
+size = Vector3(13.9, 0.1, 13.9)
+
+[node name="Building2" type="CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.7583, 7.34651, 9.22853)
+use_collision = true
+collision_layer = 129
+collision_mask = 7
+size = Vector3(14, 15, 14)
+material = SubResource("ShaderMaterial_y1r8j")
+script = ExtResource("2_iwlv8")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(0.138025, -0.272252, -0.952275, -0.391433, 0.868207, -0.304953, 0.909796, 0.414843, 0.0132659, 6.99942, 6.84651, -6.36798)
+operation = 2
+size = Vector3(5.46693, 3.6277, 4.55995)
+material = SubResource("ShaderMaterial_0g1yd")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(-0.335801, 0.131886, -0.932654, -0.251644, 0.941599, 0.223755, 0.907697, 0.309834, -0.283002, 6.92069, 7.48559, -4.36646)
+operation = 2
+size = Vector3(4.78597, 2.82266, 4.47485)
+material = SubResource("ShaderMaterial_y81c3")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+transform = Transform3D(-0.335801, 0.131886, -0.932654, -0.251644, 0.941599, 0.223755, 0.907697, 0.309834, -0.283002, 6.99942, 4.3731, -2.89938)
+operation = 2
+size = Vector3(4.64588, 2.77709, 3.28251)
+material = SubResource("ShaderMaterial_3f3dw")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+transform = Transform3D(-0.335801, 0.131886, -0.932654, -0.251644, 0.941599, 0.223755, 0.907697, 0.309834, -0.283002, 6.99942, 2.87291, 6.25001)
+operation = 2
+size = Vector3(4.64588, 5.40024, 3.28251)
+material = SubResource("ShaderMaterial_11w5c")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.40752, 0)
+mesh = SubResource("BoxMesh_6n407")

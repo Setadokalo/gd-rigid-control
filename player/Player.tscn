@@ -1,8 +1,8 @@
-[gd_scene load_steps=31 format=3 uid="uid://d4bxmkgjuxpr4"]
+[gd_scene load_steps=33 format=3 uid="uid://d4bxmkgjuxpr4"]
 
 [ext_resource type="Script" path="res://player/Player.gd" id="1_lidto"]
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="2_3eixf"]
-[ext_resource type="Script" path="res://player/Visuals.gd" id="4_cbrol"]
+[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="3_3kvhn"]
 [ext_resource type="Texture2D" uid="uid://bcm66sohtbqsc" path="res://assets/textures/ui_toppanel.png" id="5_4qe50"]
 [ext_resource type="Script" path="res://player/DataTracker.gd" id="6_god2y"]
 [ext_resource type="Texture2D" uid="uid://cwgc53jny6ufj" path="res://assets/textures/crosshair.svg" id="7_d17di"]
@@ -21,46 +21,72 @@ script/source = "extends Node
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_64cf0"]
 radius = 0.36
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sna7x"]
-albedo_color = Color(1, 0.537255, 0.290196, 1)
+[sub_resource type="AnimationNodeAdd2" id="AnimationNodeAdd2_kq0qu"]
+sync = true
 
-[sub_resource type="BoxMesh" id="BoxMesh_t06nd"]
-material = SubResource("StandardMaterial3D_sna7x")
-size = Vector3(0.522, 0.294, 0.266)
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_0fybf"]
+animation = &"run_forward"
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7rdfm"]
-albedo_color = Color(1, 0.537255, 0.290196, 1)
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_456xe"]
+animation = &"walk_forward"
 
-[sub_resource type="BoxMesh" id="BoxMesh_ibbvn"]
-material = SubResource("StandardMaterial3D_7rdfm")
-size = Vector3(0.473, 0.325, 0.245)
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_g016t"]
+animation = &"KeyAction"
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trulo"]
-albedo_color = Color(0.298039, 0.356863, 0.678431, 1)
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_tbnsj"]
+animation = &"jump"
 
-[sub_resource type="BoxMesh" id="BoxMesh_jahkv"]
-material = SubResource("StandardMaterial3D_trulo")
-size = Vector3(0.2, 0.822, 0.2)
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_vviwm"]
+animation = &"jump_start"
 
-[sub_resource type="BoxMesh" id="BoxMesh_5lvof"]
-size = Vector3(0.142, 0.2, 0.2)
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_by8hy"]
+animation = &"idle"
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_soswt"]
-albedo_color = Color(1, 0.537255, 0.290196, 1)
+[sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_qjehq"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_a6hyc"]
-material = SubResource("StandardMaterial3D_soswt")
-size = Vector3(0.161, 0.198, 0.231)
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_7uejh"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_2uula"]
-size = Vector3(0.142, 0.414, 0.201)
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_p1ro1"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_2eywj"]
-material = SubResource("StandardMaterial3D_soswt")
-size = Vector3(0.161, 0.198, 0.231)
+[sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_ncff8"]
+sync = true
+fadeout_time = 0.2
 
-[sub_resource type="BoxMesh" id="BoxMesh_l7dxn"]
-size = Vector3(0.309, 0.397, 0.305)
+[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_5awuc"]
+sync = true
+
+[sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_lo38e"]
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_v1b4p"]
+graph_offset = Vector2(-345.665, -202.901)
+nodes/Add2/node = SubResource("AnimationNodeAdd2_kq0qu")
+nodes/Add2/position = Vector2(60, 120)
+nodes/Animation/node = SubResource("AnimationNodeAnimation_by8hy")
+nodes/Animation/position = Vector2(180, 40)
+"nodes/Animation 2/node" = SubResource("AnimationNodeAnimation_0fybf")
+"nodes/Animation 2/position" = Vector2(-120, 20)
+"nodes/Animation 3/node" = SubResource("AnimationNodeAnimation_456xe")
+"nodes/Animation 3/position" = Vector2(160, 300)
+"nodes/Animation 4/node" = SubResource("AnimationNodeAnimation_g016t")
+"nodes/Animation 4/position" = Vector2(-280, 180)
+"nodes/Animation 5/node" = SubResource("AnimationNodeAnimation_tbnsj")
+"nodes/Animation 5/position" = Vector2(261.322, -208.836)
+"nodes/Animation 6/node" = SubResource("AnimationNodeAnimation_vviwm")
+"nodes/Animation 6/position" = Vector2(-80, -140)
+nodes/TimeScale/node = SubResource("AnimationNodeTimeScale_qjehq")
+nodes/TimeScale/position = Vector2(160, -100)
+nodes/idleblend/node = SubResource("AnimationNodeBlend2_7uejh")
+nodes/idleblend/position = Vector2(820, 20)
+nodes/jumpblend/node = SubResource("AnimationNodeBlend2_p1ro1")
+nodes/jumpblend/position = Vector2(1102.51, -71.7426)
+nodes/jumpshot/node = SubResource("AnimationNodeOneShot_ncff8")
+nodes/jumpshot/position = Vector2(580, -240)
+nodes/output/position = Vector2(1400, -60)
+nodes/runblend/node = SubResource("AnimationNodeBlend2_5awuc")
+nodes/runblend/position = Vector2(380, 180)
+nodes/walkspeed/node = SubResource("AnimationNodeTimeScale_lo38e")
+nodes/walkspeed/position = Vector2(600, 180)
+node_connections = [&"output", 0, &"jumpblend", &"idleblend", 0, &"Animation", &"idleblend", 1, &"walkspeed", &"runblend", 0, &"Animation 3", &"runblend", 1, &"Add2", &"walkspeed", 0, &"runblend", &"Add2", 0, &"Animation 2", &"Add2", 1, &"Animation 4", &"jumpblend", 0, &"jumpshot", &"jumpblend", 1, &"idleblend", &"jumpshot", 0, &"Animation 5", &"jumpshot", 1, &"TimeScale", &"TimeScale", 0, &"Animation 6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fxoom"]
 bg_color = Color(1, 1, 1, 1)
@@ -161,99 +187,41 @@ shape = SubResource("CylinderShape3D_64cf0")
 [node name="SmoothedVisuals" type="Node3D" parent="."]
 script = ExtResource("2_3eixf")
 
-[node name="Visuals" type="Node3D" parent="SmoothedVisuals"]
-script = ExtResource("4_cbrol")
+[node name="botman" parent="SmoothedVisuals" instance=ExtResource("3_3kvhn")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.0653917, 0)
 
-[node name="Torso" type="MeshInstance3D" parent="SmoothedVisuals/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.327542, 0)
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_t06nd")
-skeleton = NodePath("../../..")
+[node name="Skeleton3D" parent="SmoothedVisuals/botman/Armature" index="0"]
+bones/0/rotation = Quaternion(-0.00317568, 0.7071, 0.7071, 0.00317568)
+bones/1/rotation = Quaternion(-5.33851e-08, 0.707107, 0.707107, -5.33851e-08)
+bones/2/rotation = Quaternion(0.0026846, 4.38467e-08, 0.0246541, 0.999692)
+bones/4/rotation = Quaternion(-0.188366, 0.103261, -0.497172, 0.84064)
+bones/5/rotation = Quaternion(0.259655, -0.000329443, -0.0012257, 0.965701)
+bones/9/rotation = Quaternion(-0.0473461, -0.0192483, 0.452152, 0.890475)
+bones/10/rotation = Quaternion(0.116536, 0.000147816, 0.00126058, 0.993186)
+bones/12/rotation = Quaternion(2.05968e-09, -2.80277e-07, 0.0261957, 0.999657)
+bones/13/rotation = Quaternion(0.0673159, -2.67059e-10, 7.62392e-10, 0.997732)
+bones/14/rotation = Quaternion(0.0179924, -4.43546e-10, -1.54561e-09, 0.999838)
+bones/16/rotation = Quaternion(-0.339662, -0.00425267, -0.0257011, 0.940187)
+bones/17/rotation = Quaternion(0.0202173, -0.00679969, 0.318723, 0.947608)
+bones/18/rotation = Quaternion(-0.0142132, 0.00293601, -0.513986, 0.857676)
+bones/20/rotation = Quaternion(-0.2584, 0.0599528, 0.217916, 0.939227)
+bones/21/rotation = Quaternion(0.0206606, 0.00530267, -0.248556, 0.968383)
+bones/22/rotation = Quaternion(-0.0136115, -0.00503605, 0.379434, 0.925105)
 
-[node name="Torso2" type="MeshInstance3D" parent="SmoothedVisuals/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0168054, 0.0090118)
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_ibbvn")
-skeleton = NodePath("../../..")
-
-[node name="LegR" type="Node3D" parent="SmoothedVisuals/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.124, -0.174, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/LegR"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.413494, 0)
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_jahkv")
-skeleton = NodePath("../../../..")
-
-[node name="LegL" type="Node3D" parent="SmoothedVisuals/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.123795, -0.173594, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/LegL"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.413494, 0)
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_jahkv")
-skeleton = NodePath("../../../..")
-
-[node name="ArmR" type="Node3D" parent="SmoothedVisuals/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.358103, 0.381739, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmR"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.202294, 0)
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_5lvof")
-skeleton = NodePath("../../../..")
-
-[node name="Mesh2" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmR"]
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_a6hyc")
-skeleton = NodePath("../../../..")
-
-[node name="ArmRLower" type="Node3D" parent="SmoothedVisuals/Visuals/ArmR"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.306, 0)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmR/ArmRLower"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.18766, 0)
-mesh = SubResource("BoxMesh_2uula")
-
-[node name="ArmL" type="Node3D" parent="SmoothedVisuals/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.358, 0.382, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmL"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.202232, 0)
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_5lvof")
-skeleton = NodePath("../../../..")
-
-[node name="Mesh3" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmL"]
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_2eywj")
-skeleton = NodePath("../../../..")
-
-[node name="ArmLLower" type="Node3D" parent="SmoothedVisuals/Visuals/ArmL"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.306661, 0)
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/ArmL/ArmLLower"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.187, 0)
-mesh = SubResource("BoxMesh_2uula")
-skeleton = NodePath("../../../ArmR/ArmRLower")
-
-[node name="Head" type="Node3D" parent="SmoothedVisuals/Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.579376, 0)
-
-[node name="Mesh" type="MeshInstance3D" parent="SmoothedVisuals/Visuals/Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.152, -0.036)
-layers = 1024
-gi_mode = 2
-mesh = SubResource("BoxMesh_l7dxn")
-skeleton = NodePath("../../../..")
+[node name="AnimationTree" type="AnimationTree" parent="SmoothedVisuals"]
+tree_root = SubResource("AnimationNodeBlendTree_v1b4p")
+anim_player = NodePath("../botman/AnimationPlayer")
+advance_expression_base_node = NodePath("../..")
+active = true
+parameters/Add2/add_amount = 1.0
+parameters/TimeScale/scale = 2.0
+parameters/idleblend/blend_amount = 0.0
+parameters/jumpblend/blend_amount = 0.0
+parameters/jumpshot/active = false
+parameters/jumpshot/internal_active = false
+parameters/jumpshot/request = 0
+parameters/runblend/blend_amount = 0.0
+parameters/walkspeed/scale = 0.25
 
 [node name="GUI" type="Control" parent="."]
 layout_mode = 3
@@ -276,7 +244,6 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_fxoom")
 
 [node name="TopBarGUI" type="PanelContainer" parent="GUI"]
-visible = false
 layout_mode = 1
 offset_right = 20.0
 offset_bottom = 18.0
@@ -341,3 +308,5 @@ enabled = false
 shape = SubResource("CylinderShape3D_6xqgi")
 target_position = Vector3(0, 0, 0)
 debug_shape_custom_color = Color(0.858824, 0.0745098, 0.72549, 1)
+
+[editable path="SmoothedVisuals/botman"]
