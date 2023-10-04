@@ -1,331 +1,210 @@
-[gd_scene load_steps=35 format=3 uid="uid://cux57veoyv20n"]
+[gd_scene load_steps=15 format=3 uid="uid://cux57veoyv20n"]
 
-[ext_resource type="Script" path="res://pixelmain.gd" id="1_qnvca"]
+[ext_resource type="PackedScene" uid="uid://cwxnkiqax6sm5" path="res://pixel_world.tscn" id="1_dr66b"]
+[ext_resource type="Shader" path="res://upscale.gdshader" id="1_nrto7"]
 [ext_resource type="Texture2D" uid="uid://5yq4otqwe3oy" path="res://assets/textures/fast_forward.png" id="3_uuola"]
-[ext_resource type="Script" path="res://LazyPlayerFollower.gd" id="4_bayqb"]
-[ext_resource type="Script" path="res://daynightspinner.gd" id="5_2mcih"]
-[ext_resource type="Shader" path="res://pixel_lighting.gdshader" id="6_gjtjf"]
-[ext_resource type="Script" path="res://HidingOccluder.gd" id="7_le8hx"]
-[ext_resource type="PackedScene" uid="uid://datvlpoheensh" path="res://building_prototype.tscn" id="8_1aeee"]
-[ext_resource type="Texture2D" uid="uid://csxk7wjle032l" path="res://assets/prototype textures/Dark/texture_09.png" id="8_kjkxs"]
-[ext_resource type="PackedScene" uid="uid://d4bxmkgjuxpr4" path="res://player/Player.tscn" id="10_ubc0m"]
-[ext_resource type="Texture2D" uid="uid://bp14sqe0smg2d" path="res://assets/textures/leaf.png" id="11_snwqn"]
-[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="12_kltho"]
+[ext_resource type="Texture2D" uid="uid://bcm66sohtbqsc" path="res://assets/textures/ui_toppanel.png" id="4_0ihyg"]
+[ext_resource type="Script" path="res://player/DataTracker.gd" id="5_g2vf6"]
+[ext_resource type="FontFile" uid="uid://cwcfr7av8pbie" path="res://assets/textures/font_smaller.png" id="5_pblpn"]
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_fhlwj"]
-size = Vector2(4.05, 45.955)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_12jmu"]
+shader = ExtResource("1_nrto7")
 
-[sub_resource type="Shader" id="Shader_j01uj"]
-code = "shader_type spatial;
+[sub_resource type="ViewportTexture" id="ViewportTexture_a7o22"]
+viewport_path = NodePath("World/SubViewport")
 
-float hash(vec2 a) {
-	return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 );
-}
+[sub_resource type="GDScript" id="GDScript_bohyj"]
+script/source = "extends TextureRect
 
-void fragment() {
-	ALBEDO = vec3(hash(trunc(UV * vec2(4.05, 45.955) * 8.0))) * vec3(1.0, 0.2, 0.2);
-}
+func _input(event: InputEvent) -> void:
+	$SubViewport.push_input(event)
+
+func _ready() -> void:
+	$SubViewport/World/PlayerTrackingCamera.pixel_offset.connect(func(offs): 
+		var vp_size: Vector2 = Vector2($SubViewport.size)
+		var p_size: Vector2 = get_parent().get_rect().size
+		var vp_ratio := vp_size.x / vp_size.y
+		# x expects y of 
+		var rsize = p_size
+		var x_xpct_y = p_size.x / vp_ratio
+		if x_xpct_y > p_size.y:
+			rsize.x = size.y * vp_ratio
+		else:
+			rsize.y = size.x / vp_ratio
+		var pixel_size_texels = rsize / Vector2($SubViewport.size)
+		size = p_size + pixel_size_texels * 2.0
+		position = offs * pixel_size_texels * 15.0 - (pixel_size_texels)
+	)
+
+
+func _process(_delta: float) -> void:
+	var p_size = get_parent().get_rect().size
+	var pr = min(p_size.x / p_size.y, 2.5)
+	$SubViewport.size.x = $SubViewport.size.y * pr
+	
+	p_size = $\"../GUI\".get_rect().size
+	pr = min(p_size.x / p_size.y, 2.5)
+	$\"../GUI/SubViewport\".size.x = $\"../GUI/SubViewport\".size.y * pr
+	
 "
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_v0ljl"]
-render_priority = 0
-shader = SubResource("Shader_j01uj")
+[sub_resource type="ViewportTexture" id="ViewportTexture_lwq2i"]
+viewport_path = NodePath("GUI/SubViewport")
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_urf64"]
-radius = 0.2
+[sub_resource type="GDScript" id="GDScript_mkjro"]
+script/source = "extends PanelContainer
 
-[sub_resource type="Environment" id="Environment_ch3mh"]
-background_mode = 1
-background_color = Color(0.196078, 0.431373, 0.627451, 1)
-tonemap_mode = 3
-tonemap_white = 4.0
-sdfgi_y_scale = 0
+func _ready() -> void:
+	if not get_tree().root.is_node_ready():
+		await get_tree().root.ready
+	else:
+		printerr(\"root was already ready\")
+		await get_tree().process_frame
+	get_tree().root.find_child(\"Sun\", true, false).fast_forward_state_changed.connect(func(b): visible = b)
+"
 
-[sub_resource type="Gradient" id="Gradient_5mksh"]
-colors = PackedColorArray(1, 1, 1, 1, 1, 0.552661, 0.36677, 1)
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tghg4"]
+content_margin_left = 4.0
+texture = ExtResource("4_0ihyg")
+texture_margin_right = 8.0
+region_rect = Rect2(0, 0, 32, 8)
 
-[sub_resource type="Gradient" id="Gradient_a2anf"]
-interpolation_color_space = 2
-offsets = PackedFloat32Array(0.357143, 0.421875, 0.486607, 0.524554, 0.633929)
-colors = PackedColorArray(0.135255, 0.169776, 0.289552, 1, 0.141605, 0.264193, 0.47032, 1, 0.709804, 0.403922, 0.168627, 1, 0.709804, 0.403922, 0.168627, 1, 0.468033, 0.640916, 0.900531, 1)
+[sub_resource type="GDScript" id="GDScript_pcsf3"]
+script/source = "extends PanelContainer
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_0xyng"]
-render_priority = 0
-shader = ExtResource("6_gjtjf")
-shader_parameter/zNear = 0.25
-shader_parameter/zFar = 1000.0
-shader_parameter/color = Color(0.34902, 0.34902, 0.34902, 1)
-shader_parameter/emission = Color(0, 0, 0, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tbddf"]
-albedo_texture = ExtResource("8_kjkxs")
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	await get_tree().process_frame
+	$VBoxContainer/Label2.target = Globals.player
+"
+
+[sub_resource type="GDScript" id="GDScript_wqyqe"]
+script/source = "extends Label
+
+var _frames := 0
+var _time := 0.0
+
+func _process(delta: float) -> void:
+	_time += delta
+	_frames += 1
+	if _time > 1.0:
+		var s := get_viewport_rect().size
+		print(\"Screen is %dx%d\" % [s.x, s.y])
+		text = \"FPS: %3d (%.6f mspf)\" % [_frames, _time / _frames]
+		_time -= 1.0
+		_frames = 0
+"
+
+[node name="GameRoot" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="World" type="TextureRect" parent="."]
+texture_filter = 6
+material = SubResource("ShaderMaterial_12jmu")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("ViewportTexture_a7o22")
+stretch_mode = 5
+script = SubResource("GDScript_bohyj")
+
+[node name="SubViewport" type="SubViewport" parent="World"]
+canvas_item_default_texture_filter = 0
+size = Vector2i(322, 210)
+
+[node name="World" parent="World/SubViewport" instance=ExtResource("1_dr66b")]
+
+[node name="Node3D" type="Node3D" parent="World/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="Sprite3D" type="Sprite3D" parent="World/SubViewport/Node3D" groups=["pixel_lock"]]
+offset = Vector2(0.25, 0.25)
+pixel_size = 0.0714
+billboard = 1
+alpha_cut = 1
 texture_filter = 0
+render_priority = 1
+texture = ExtResource("3_uuola")
 
-[sub_resource type="BoxMesh" id="BoxMesh_cbgk4"]
-size = Vector3(200, 5, 200)
+[node name="GUI" type="TextureRect" parent="."]
+texture_filter = 6
+material = SubResource("ShaderMaterial_12jmu")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("ViewportTexture_lwq2i")
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_6q4gr"]
-radial_segments = 5
+[node name="SubViewport" type="SubViewport" parent="GUI"]
+transparent_bg = true
+canvas_item_default_texture_filter = 0
+size = Vector2i(320, 209)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ptt0h"]
-albedo_color = Color(0.364706, 0.290196, 0.219608, 1)
-
-[sub_resource type="SphereMesh" id="SphereMesh_tre8w"]
-radius = 1.115
-height = 1.675
-radial_segments = 8
-rings = 4
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_2tfr4"]
-render_priority = 0
-shader = ExtResource("6_gjtjf")
-shader_parameter/zNear = 0.25
-shader_parameter/zFar = 1000.0
-shader_parameter/color = Color(0.317647, 0.537255, 0.0392157, 1)
-shader_parameter/emission = Color(0, 0, 0, 1)
-
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_iw8xx"]
-emission_shape = 2
-emission_sphere_radius = 1.1
-gravity = Vector3(0, 0, 0)
-angle_min = -360.0
-angle_max = 360.0
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4sd31"]
-transparency = 2
-alpha_scissor_threshold = 0.5
-alpha_antialiasing_mode = 0
-depth_draw_mode = 2
-albedo_color = Color(0.690196, 0.690196, 0.690196, 1)
-albedo_texture = ExtResource("11_snwqn")
-backlight_enabled = true
-billboard_mode = 3
-particles_anim_h_frames = 1
-particles_anim_v_frames = 1
-particles_anim_loop = false
-fixed_size = true
-
-[sub_resource type="QuadMesh" id="QuadMesh_drbup"]
-material = SubResource("StandardMaterial3D_4sd31")
-size = Vector2(0.05, 0.05)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pe72d"]
-albedo_color = Color(0.0235294, 0.364706, 0.0666667, 1)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_hgxni"]
-render_priority = 0
-shader = ExtResource("6_gjtjf")
-shader_parameter/zNear = 0.25
-shader_parameter/zFar = 1000.0
-shader_parameter/color = Color(0.317647, 0.537255, 0.0392157, 1)
-shader_parameter/emission = Color(0, 0, 0, 1)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_shm85"]
-render_priority = 0
-shader = ExtResource("6_gjtjf")
-shader_parameter/zNear = 0.25
-shader_parameter/zFar = 1000.0
-shader_parameter/color = Color(0.317647, 0.537255, 0.0392157, 1)
-shader_parameter/emission = Color(0, 0, 0, 1)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_qccc1"]
-render_priority = 0
-shader = ExtResource("6_gjtjf")
-shader_parameter/zNear = 0.25
-shader_parameter/zFar = 1000.0
-shader_parameter/color = Color(0.752941, 0, 0.0784314, 1)
-shader_parameter/emission = Color(0, 0, 0, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_s5mcx"]
-material = SubResource("ShaderMaterial_qccc1")
-size = Vector3(5.355, 1, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_qkjsv"]
-material = SubResource("ShaderMaterial_qccc1")
-size = Vector3(4, 1, 4)
-
-[node name="World" type="Node3D"]
-script = ExtResource("1_qnvca")
-
-[node name="static_grid" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.999999, 0, 0, 0, 1, -2.89688, 0.503908, 22.5394)
-mesh = SubResource("PlaneMesh_fhlwj")
-skeleton = NodePath("../PlayerTrackingCamera")
-surface_material_override/0 = SubResource("ShaderMaterial_v0ljl")
-
-[node name="PlayerTrackingCamera" type="Node3D" parent="." node_paths=PackedStringArray("target_node")]
-transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, -2.11773, 0, 2.63583)
-script = ExtResource("4_bayqb")
-follow_distance = 5.0
-follow_velocity_modifier = 0.75
-follow_accel = 5.0
-follow_decel = 5.0
-target_node = NodePath("../Player")
-
-[node name="Camera3D" type="Camera3D" parent="PlayerTrackingCamera"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 50)
-projection = 1
-current = true
-fov = 42.0
-size = 15.0
-near = 0.25
-far = 1000.0
-
-[node name="RayCast3D" type="ShapeCast3D" parent="PlayerTrackingCamera"]
-shape = SubResource("SphereShape3D_urf64")
-max_results = 4
-collision_mask = 128
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_ch3mh")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
-transform = Transform3D(0.824866, 0.544108, -0.153437, 0.108186, -0.418323, -0.901833, -0.55488, 0.727291, -0.403925, -8.58804, 31.2744, 4.0996)
-light_cull_mask = 4294443007
-shadow_enabled = true
-directional_shadow_fade_start = 0.9
-directional_shadow_max_distance = 50.0
-script = ExtResource("5_2mcih")
-color_ramp = SubResource("Gradient_5mksh")
-bg_color_ramp = SubResource("Gradient_a2anf")
-
-[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="WorldEnvironment/DirectionalLight3D"]
-transform = Transform3D(1, 0, 0, 0, -1, 8.74228e-08, 0, -8.74228e-08, -1, 0, 0, 0)
-light_color = Color(0.662745, 0.780392, 1, 1)
-light_energy = 0.5
-light_cull_mask = 4294443007
-shadow_enabled = true
-
-[node name="Panel" type="PanelContainer" parent="WorldEnvironment/DirectionalLight3D"]
+[node name="Panel" type="PanelContainer" parent="GUI/SubViewport"]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -16.0
+offset_left = -45.0
 offset_top = 2.0
-offset_right = 16.0
-offset_bottom = 18.0
+offset_right = 45.0
+offset_bottom = 23.0
 grow_horizontal = 2
+script = SubResource("GDScript_mkjro")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="WorldEnvironment/DirectionalLight3D/Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/SubViewport/Panel"]
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="WorldEnvironment/DirectionalLight3D/Panel/VBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="GUI/SubViewport/Panel/VBoxContainer"]
 layout_mode = 2
 texture = ExtResource("3_uuola")
 stretch_mode = 3
 
-[node name="Label" type="Label" parent="WorldEnvironment/DirectionalLight3D/Panel/VBoxContainer"]
+[node name="Label" type="Label" parent="GUI/SubViewport/Panel/VBoxContainer"]
 layout_mode = 2
 text = "Fast Forwarding..."
 horizontal_alignment = 1
 
-[node name="Ground" type="CSGBox3D" parent="."]
-use_collision = true
-collision_layer = 129
-collision_mask = 7
-size = Vector3(150, 1, 150)
-material = SubResource("ShaderMaterial_0xyng")
-script = ExtResource("7_le8hx")
+[node name="TopBarGUI" type="PanelContainer" parent="GUI/SubViewport"]
+offset_right = 32.0
+offset_bottom = 18.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_tghg4")
+script = SubResource("GDScript_pcsf3")
 
-[node name="CSGBox3D" type="CSGBox3D" parent="Ground"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.44086, 0.464117, 24.9576)
-operation = 2
-size = Vector3(6, 1, 64)
-material = SubResource("StandardMaterial3D_tbddf")
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI/SubViewport/TopBarGUI"]
+layout_mode = 2
+theme_override_constants/separation = 0
 
-[node name="CSGBox3D2" type="CSGBox3D" parent="Ground"]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -26.5591, 0.464117, -4.04241)
-operation = 2
-size = Vector3(6, 1, 64)
-material = SubResource("StandardMaterial3D_tbddf")
+[node name="Label" type="Label" parent="GUI/SubViewport/TopBarGUI/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/line_spacing = 1
+theme_override_fonts/font = ExtResource("5_pblpn")
+theme_override_font_sizes/font_size = 12
+text = "FPS:"
+script = SubResource("GDScript_wqyqe")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.81593, 0)
-cast_shadow = 3
-mesh = SubResource("BoxMesh_cbgk4")
-
-[node name="Building2" parent="." instance=ExtResource("8_1aeee")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.7583, 7.88243, 9.22853)
-
-[node name="Building3" parent="." instance=ExtResource("8_1aeee")]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -20.8226, 7.88243, -17.0941)
-
-[node name="Building5" parent="." instance=ExtResource("8_1aeee")]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 1.56158, 7.88243, -17.0941)
-
-[node name="Building4" parent="." instance=ExtResource("8_1aeee")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.7583, 7.88243, 30.0689)
-
-[node name="Player" parent="." instance=ExtResource("10_ubc0m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.970568, 1.47451, 5.50316)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.986544, 0.163498, 0, -0.163498, 0.986544, 0, 0, 0, 1, 9.11736, 1.44309, 0)
-mesh = SubResource("CylinderMesh_6q4gr")
-skeleton = NodePath("")
-surface_material_override/0 = SubResource("StandardMaterial3D_ptt0h")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="MeshInstance3D"]
-transform = Transform3D(0.959776, -0.280767, 0, 0.280767, 0.959776, 0, 0, 0, 1, -0.214086, 1.72015, 0)
-mesh = SubResource("CylinderMesh_6q4gr")
-skeleton = NodePath("")
-surface_material_override/0 = SubResource("StandardMaterial3D_ptt0h")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
-transform = Transform3D(1, -7.45058e-09, 0, 7.45058e-09, 1, 0, 0, 0, 1, 0.0795765, 0.657969, 0.668533)
-mesh = SubResource("SphereMesh_tre8w")
-surface_material_override/0 = SubResource("ShaderMaterial_2tfr4")
-
-[node name="GPUParticles3D" type="GPUParticles3D" parent="MeshInstance3D/MeshInstance3D2/MeshInstance3D"]
-transform = Transform3D(1, 0, 0, 0, 0.88, 0, 0, 0, 1, 0, 0, 0)
-emitting = false
-amount = 64
-lifetime = 10000.0
-explosiveness = 1.0
-local_coords = true
-process_material = SubResource("ParticleProcessMaterial_iw8xx")
-draw_pass_1 = SubResource("QuadMesh_drbup")
-
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.535018, -0.57694, -0.814323)
-mesh = SubResource("SphereMesh_tre8w")
-surface_material_override/0 = SubResource("StandardMaterial3D_pe72d")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
-transform = Transform3D(1.2, 0, 0, 0, 1.22, 0, 0, 0, 1.47, 0.392544, 0.620117, -0.796112)
-mesh = SubResource("SphereMesh_tre8w")
-surface_material_override/0 = SubResource("ShaderMaterial_hgxni")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
-transform = Transform3D(1.2, -5.96046e-08, 0, -5.96046e-08, 1.22, 0, 0, 0, 1.47, -0.620878, 1.18298, -0.796112)
-mesh = SubResource("SphereMesh_tre8w")
-surface_material_override/0 = SubResource("ShaderMaterial_shm85")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.988604, 0.150536, 0, -0.150536, 0.988604, 0, 0, 0, 1, 12.8371, 2.76271, 7.7115)
-mesh = SubResource("BoxMesh_s5mcx")
-skeleton = NodePath("")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.232288, -0.133178, -0.963486, -0.532642, 0.811428, -0.240575, 0.813839, 0.569076, 0.117549, 12.6473, 3.22073, 9.20271)
-mesh = SubResource("BoxMesh_s5mcx")
-skeleton = NodePath("")
-
-[node name="MeshInstance3D5" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.1457, 3.22073, 9.20271)
-mesh = SubResource("BoxMesh_qkjsv")
-skeleton = NodePath("")
-
-[node name="MeshInstance3D6" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 18.9088, 4.03317, 8.1316)
-mesh = SubResource("BoxMesh_qkjsv")
-skeleton = NodePath("")
-
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="."]
-transform = Transform3D(-0.00668172, 0.940187, -0.340592, -0.647038, -0.263754, -0.715385, -0.762429, 0.215596, 0.6101, 13.8814, 2.72915, 9.20271)
-mesh = SubResource("BoxMesh_s5mcx")
-skeleton = NodePath("")
-
-[node name="botman" parent="." instance=ExtResource("12_kltho")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -2.10731, 1.3993, 6.00493)
-visible = false
+[node name="Label2" type="RichTextLabel" parent="GUI/SubViewport/TopBarGUI/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/line_separation = 1
+theme_override_fonts/normal_font = ExtResource("5_pblpn")
+bbcode_enabled = true
+text = "test
+text"
+fit_content = true
+autowrap_mode = 0
+script = ExtResource("5_g2vf6")
+properties = Array[String](["linear_velocity", "_is_on_floor"])
+format_string = "Velocity:
+   [color=gray]%+6.3v[/color]
+Is Grounded: [color=gray]%s[/color]"

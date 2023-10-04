@@ -1,7 +1,5 @@
 [gd_scene load_steps=14 format=3 uid="uid://nyh5uuab077x"]
 
-[ext_resource type="Texture2D" uid="uid://cg7lgei710yfm" path="res://assets/textures/particle.png" id="1_n2k6d"]
-
 [sub_resource type="Gradient" id="Gradient_w7dp0"]
 interpolation_mode = 2
 interpolation_color_space = 2
@@ -35,13 +33,15 @@ hue_variation_min = -0.07
 hue_variation_max = 0.05
 turbulence_noise_strength = 20.0
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_1uhly"]
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j6q2l"]
 transparency = 1
 blend_mode = 1
 cull_mode = 2
 shading_mode = 0
 vertex_color_use_as_albedo = true
-albedo_texture = ExtResource("1_n2k6d")
+albedo_texture = SubResource("CompressedTexture2D_1uhly")
 billboard_mode = 3
 billboard_keep_scale = true
 particles_anim_h_frames = 1

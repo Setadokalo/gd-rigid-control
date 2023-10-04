@@ -2,10 +2,9 @@
 
 [ext_resource type="Script" path="res://player/Player.gd" id="1_lidto"]
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="2_3eixf"]
-[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="3_3kvhn"]
-[ext_resource type="Texture2D" uid="uid://bcm66sohtbqsc" path="res://assets/textures/ui_toppanel.png" id="5_4qe50"]
-[ext_resource type="Script" path="res://player/DataTracker.gd" id="6_god2y"]
-[ext_resource type="Texture2D" uid="uid://cwgc53jny6ufj" path="res://assets/textures/crosshair.svg" id="7_d17di"]
+[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="3_l52i0"]
+[ext_resource type="Texture2D" uid="uid://cj27d3stdeugw" path="res://assets/textures/smoke.png" id="4_2y88l"]
+[ext_resource type="Texture2D" uid="uid://bg23o8h44jmrf" path="res://assets/textures/drop_shadow.png" id="7_d4veb"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_r0s83"]
 friction = 0.0
@@ -16,6 +15,10 @@ script/source = "extends Node
 @export var death_player: AnimationPlayer
 
 @export var smoothing_nodes: Array[Smoothing]
+
+@export var run_smoke: GPUParticles3D
+@export var stop_smoke: GPUParticles3D
+@export var jump_smoke: GPUParticles3D
 "
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_64cf0"]
@@ -42,15 +45,20 @@ animation = &"jump_start"
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_by8hy"]
 animation = &"idle"
 
-[sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_qjehq"]
-
 [sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_7uejh"]
-
-[sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_p1ro1"]
 
 [sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_ncff8"]
 sync = true
-fadeout_time = 0.2
+fadeout_time = 0.25
+
+[sub_resource type="AnimationNodeTransition" id="AnimationNodeTransition_ajqxa"]
+xfade_time = 0.1
+input_0/name = "airborne"
+input_0/auto_advance = false
+input_0/reset = true
+input_1/name = "grounded"
+input_1/auto_advance = false
+input_1/reset = true
 
 [sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_5awuc"]
 sync = true
@@ -58,7 +66,6 @@ sync = true
 [sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_lo38e"]
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_v1b4p"]
-graph_offset = Vector2(-345.665, -202.901)
 nodes/Add2/node = SubResource("AnimationNodeAdd2_kq0qu")
 nodes/Add2/position = Vector2(60, 120)
 nodes/Animation/node = SubResource("AnimationNodeAnimation_by8hy")
@@ -70,86 +77,88 @@ nodes/Animation/position = Vector2(180, 40)
 "nodes/Animation 4/node" = SubResource("AnimationNodeAnimation_g016t")
 "nodes/Animation 4/position" = Vector2(-280, 180)
 "nodes/Animation 5/node" = SubResource("AnimationNodeAnimation_tbnsj")
-"nodes/Animation 5/position" = Vector2(261.322, -208.836)
+"nodes/Animation 5/position" = Vector2(740, -220)
 "nodes/Animation 6/node" = SubResource("AnimationNodeAnimation_vviwm")
-"nodes/Animation 6/position" = Vector2(-80, -140)
-nodes/TimeScale/node = SubResource("AnimationNodeTimeScale_qjehq")
-nodes/TimeScale/position = Vector2(160, -100)
+"nodes/Animation 6/position" = Vector2(500, -100)
 nodes/idleblend/node = SubResource("AnimationNodeBlend2_7uejh")
 nodes/idleblend/position = Vector2(820, 20)
-nodes/jumpblend/node = SubResource("AnimationNodeBlend2_p1ro1")
-nodes/jumpblend/position = Vector2(1102.51, -71.7426)
 nodes/jumpshot/node = SubResource("AnimationNodeOneShot_ncff8")
-nodes/jumpshot/position = Vector2(580, -240)
+nodes/jumpshot/position = Vector2(1240, -200)
+nodes/jumptrans/node = SubResource("AnimationNodeTransition_ajqxa")
+nodes/jumptrans/position = Vector2(1000, -200)
 nodes/output/position = Vector2(1400, -60)
 nodes/runblend/node = SubResource("AnimationNodeBlend2_5awuc")
 nodes/runblend/position = Vector2(380, 180)
 nodes/walkspeed/node = SubResource("AnimationNodeTimeScale_lo38e")
 nodes/walkspeed/position = Vector2(600, 180)
-node_connections = [&"output", 0, &"jumpblend", &"idleblend", 0, &"Animation", &"idleblend", 1, &"walkspeed", &"runblend", 0, &"Animation 3", &"runblend", 1, &"Add2", &"walkspeed", 0, &"runblend", &"Add2", 0, &"Animation 2", &"Add2", 1, &"Animation 4", &"jumpblend", 0, &"jumpshot", &"jumpblend", 1, &"idleblend", &"jumpshot", 0, &"Animation 5", &"jumpshot", 1, &"TimeScale", &"TimeScale", 0, &"Animation 6"]
+node_connections = [&"output", 0, &"jumpshot", &"Add2", 0, &"Animation 2", &"Add2", 1, &"Animation 4", &"idleblend", 0, &"Animation", &"idleblend", 1, &"walkspeed", &"jumpshot", 0, &"jumptrans", &"jumpshot", 1, &"Animation 6", &"jumptrans", 0, &"Animation 5", &"jumptrans", 1, &"idleblend", &"runblend", 0, &"Animation 3", &"runblend", 1, &"Add2", &"walkspeed", 0, &"runblend"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fxoom"]
-bg_color = Color(1, 1, 1, 1)
+[sub_resource type="Gradient" id="Gradient_aftls"]
+interpolation_mode = 2
+offsets = PackedFloat32Array(0.417143, 0.914286)
+colors = PackedColorArray(1, 1, 1, 0.74902, 1, 1, 1, 0)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g1f1c"]
-content_margin_left = 4.0
-texture = ExtResource("5_4qe50")
-texture_margin_right = 8.0
-region_rect = Rect2(0, 0, 32, 8)
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_icvvu"]
+gradient = SubResource("Gradient_aftls")
 
-[sub_resource type="GDScript" id="GDScript_mr14b"]
-script/source = "extends Label
+[sub_resource type="Curve" id="Curve_ghlf5"]
+_data = [Vector2(0, 0), 0.0, 9.38032, 0, 0, Vector2(0.218579, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.37269, 0.0, 0, 0]
+point_count = 3
 
-var _frames := 0
-var _time := 0.0
+[sub_resource type="CurveTexture" id="CurveTexture_qdq80"]
+curve = SubResource("Curve_ghlf5")
 
-func _process(delta: float) -> void:
-	_time += delta
-	_frames += 1
-	if _time > 1.0:
-		var s := get_viewport_rect().size
-		print(\"Screen is %dx%d\" % [s.x, s.y])
-		text = \"FPS: %3d (%.8f mspf)\" % [_frames, _time / _frames]
-		_time -= 1.0
-		_frames = 0
-"
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_spra4"]
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.067
+emission_ring_radius = 0.645
+emission_ring_inner_radius = 0.0
+direction = Vector3(0, 1, 0.375)
+spread = 33.9
+gravity = Vector3(0, -0.375, 0)
+initial_velocity_min = 1.0
+initial_velocity_max = 1.25
+damping_min = 2.0
+damping_max = 2.0
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_qdq80")
+color_ramp = SubResource("GradientTexture1D_icvvu")
 
-[sub_resource type="Animation" id="Animation_c535t"]
-resource_name = "RESET"
-length = 0.1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("DeathLayer:modulate")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Color(1, 0, 0, 0)]
-}
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_i86k3"]
+render_priority = 1
+transparency = 1
+depth_draw_mode = 2
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("4_2y88l")
+texture_filter = 0
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+fixed_size = true
 
-[sub_resource type="Animation" id="Animation_epk1q"]
-resource_name = "death_flash"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("DeathLayer:modulate")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1),
-"transitions": PackedFloat32Array(2.07052, 1),
-"update": 0,
-"values": [Color(1, 0, 0, 0.317647), Color(1, 0, 0, 0)]
-}
+[sub_resource type="QuadMesh" id="QuadMesh_6vj8a"]
+material = SubResource("StandardMaterial3D_i86k3")
+size = Vector2(0.038, 0.038)
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_qmbgo"]
-_data = {
-"RESET": SubResource("Animation_c535t"),
-"death_flash": SubResource("Animation_epk1q")
-}
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_lyrym"]
+emission_shape = 6
+emission_ring_axis = Vector3(0, 1, 0)
+emission_ring_height = 0.067
+emission_ring_radius = 0.3
+emission_ring_inner_radius = 0.0
+direction = Vector3(0, 1, 0)
+spread = 23.7
+gravity = Vector3(0, -0.375, 0)
+initial_velocity_min = 1.8
+initial_velocity_max = 3.0
+damping_min = 2.0
+damping_max = 2.0
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_qdq80")
+color_ramp = SubResource("GradientTexture1D_icvvu")
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_7wism"]
 height = 0.125
@@ -176,10 +185,12 @@ continuous_cd = true
 lock_rotation = true
 script = ExtResource("1_lidto")
 
-[node name="References" type="Node" parent="." node_paths=PackedStringArray("death_player", "smoothing_nodes")]
+[node name="References" type="Node" parent="." node_paths=PackedStringArray("smoothing_nodes", "run_smoke", "stop_smoke", "jump_smoke")]
 script = SubResource("GDScript_m4eab")
-death_player = NodePath("../GUI/DeathPlayer")
-smoothing_nodes = [NodePath("../SmoothedVisuals"), null]
+smoothing_nodes = [NodePath("../SmoothedVisuals")]
+run_smoke = NodePath("../SmoothedVisuals/botman/RunSmoke")
+stop_smoke = NodePath("../SmoothedVisuals/botman/StopSmoke")
+jump_smoke = NodePath("../SmoothedVisuals/botman/JumpSmoke")
 
 [node name="CapsuleShape" type="CollisionShape3D" parent="."]
 shape = SubResource("CylinderShape3D_64cf0")
@@ -187,109 +198,88 @@ shape = SubResource("CylinderShape3D_64cf0")
 [node name="SmoothedVisuals" type="Node3D" parent="."]
 script = ExtResource("2_3eixf")
 
-[node name="botman" parent="SmoothedVisuals" instance=ExtResource("3_3kvhn")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.0653917, 0)
-
-[node name="Skeleton3D" parent="SmoothedVisuals/botman/Armature" index="0"]
-bones/0/rotation = Quaternion(-0.00317568, 0.7071, 0.7071, 0.00317568)
-bones/1/rotation = Quaternion(-5.33851e-08, 0.707107, 0.707107, -5.33851e-08)
-bones/2/rotation = Quaternion(0.0026846, 4.38467e-08, 0.0246541, 0.999692)
-bones/4/rotation = Quaternion(-0.188366, 0.103261, -0.497172, 0.84064)
-bones/5/rotation = Quaternion(0.259655, -0.000329443, -0.0012257, 0.965701)
-bones/9/rotation = Quaternion(-0.0473461, -0.0192483, 0.452152, 0.890475)
-bones/10/rotation = Quaternion(0.116536, 0.000147816, 0.00126058, 0.993186)
-bones/12/rotation = Quaternion(2.05968e-09, -2.80277e-07, 0.0261957, 0.999657)
-bones/13/rotation = Quaternion(0.0673159, -2.67059e-10, 7.62392e-10, 0.997732)
-bones/14/rotation = Quaternion(0.0179924, -4.43546e-10, -1.54561e-09, 0.999838)
-bones/16/rotation = Quaternion(-0.339662, -0.00425267, -0.0257011, 0.940187)
-bones/17/rotation = Quaternion(0.0202173, -0.00679969, 0.318723, 0.947608)
-bones/18/rotation = Quaternion(-0.0142132, 0.00293601, -0.513986, 0.857676)
-bones/20/rotation = Quaternion(-0.2584, 0.0599528, 0.217916, 0.939227)
-bones/21/rotation = Quaternion(0.0206606, 0.00530267, -0.248556, 0.968383)
-bones/22/rotation = Quaternion(-0.0136115, -0.00503605, 0.379434, 0.925105)
-
 [node name="AnimationTree" type="AnimationTree" parent="SmoothedVisuals"]
 tree_root = SubResource("AnimationNodeBlendTree_v1b4p")
-anim_player = NodePath("../botman/AnimationPlayer")
+anim_player = NodePath("../botman/botman/AnimationPlayer")
 advance_expression_base_node = NodePath("../..")
 active = true
 parameters/Add2/add_amount = 1.0
-parameters/TimeScale/scale = 2.0
-parameters/idleblend/blend_amount = 0.0
-parameters/jumpblend/blend_amount = 0.0
+parameters/idleblend/blend_amount = 1.0
 parameters/jumpshot/active = false
 parameters/jumpshot/internal_active = false
 parameters/jumpshot/request = 0
-parameters/runblend/blend_amount = 0.0
-parameters/walkspeed/scale = 0.25
+parameters/jumptrans/current_state = "grounded"
+parameters/jumptrans/transition_request = ""
+parameters/jumptrans/current_index = 1
+parameters/runblend/blend_amount = 1.0
+parameters/walkspeed/scale = 0.5
 
-[node name="GUI" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+[node name="botman" type="Node3D" parent="SmoothedVisuals"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
-[node name="DeathLayer" type="Panel" parent="GUI"]
-modulate = Color(1, 0, 0, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_fxoom")
+[node name="botman" parent="SmoothedVisuals/botman" instance=ExtResource("3_l52i0")]
 
-[node name="TopBarGUI" type="PanelContainer" parent="GUI"]
-layout_mode = 1
-offset_right = 20.0
-offset_bottom = 18.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxTexture_g1f1c")
+[node name="Skeleton3D" parent="SmoothedVisuals/botman/botman/Armature" index="0"]
+bones/0/position = Vector3(0, 0.805022, -0.00959882)
+bones/0/rotation = Quaternion(0.0436224, 0.664855, 0.744679, -0.0389464)
+bones/1/rotation = Quaternion(-5.15535e-08, 0.730088, 0.683353, -4.92368e-08)
+bones/2/rotation = Quaternion(0.0739421, 0.14243, -0.00387913, 0.987032)
+bones/3/rotation = Quaternion(2.76495e-07, 9.20721e-08, -0.775872, 0.630891)
+bones/4/rotation = Quaternion(-0.284684, 0.304991, -0.480477, 0.771412)
+bones/5/rotation = Quaternion(0.832947, -0.00105714, -0.000702351, 0.553351)
+bones/7/rotation = Quaternion(2.05967e-09, 2.80277e-07, -0.0261957, 0.999657)
+bones/8/rotation = Quaternion(9.15129e-08, -2.42488e-07, 0.775872, 0.630891)
+bones/9/rotation = Quaternion(0.300984, 0.163035, 0.55815, 0.755841)
+bones/10/rotation = Quaternion(0.605368, 0.000768225, 0.00101025, 0.795945)
+bones/12/rotation = Quaternion(2.05968e-09, -2.80277e-07, 0.0261957, 0.999657)
+bones/13/rotation = Quaternion(-0.0242824, -7.84583e-09, -2.00088e-09, 0.999705)
+bones/14/rotation = Quaternion(-0.133558, -0.132933, 0.00405209, 0.982077)
+bones/16/rotation = Quaternion(-0.316553, -0.166716, -0.562307, 0.745528)
+bones/17/rotation = Quaternion(-0.00853757, 0.0178555, 0.599127, 0.800409)
+bones/18/rotation = Quaternion(-0.0331853, -0.012862, -0.528317, 0.848301)
+bones/20/rotation = Quaternion(-0.366346, -0.0160623, -0.213481, 0.905516)
+bones/21/rotation = Quaternion(0.00670128, 0.0196244, -0.205765, 0.978382)
+bones/22/rotation = Quaternion(-0.019106, -0.0095543, 0.630629, 0.77579)
+bones/25/position = Vector3(0.117056, 0.379537, -0.531697)
+bones/25/rotation = Quaternion(-0.679529, 0.195554, -0.679528, 0.195553)
+bones/26/position = Vector3(-0.14085, 0.209034, -0.438862)
+bones/26/rotation = Quaternion(0.686014, -0.171421, -0.686014, 0.171421)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GUI/TopBarGUI"]
-layout_mode = 2
-theme_override_constants/separation = 1
+[node name="Body" parent="SmoothedVisuals/botman/botman/Armature/Skeleton3D" index="0"]
+blend_shapes/LElbowBendFix = 0.889787
+blend_shapes/LShoulderBackRotation = 0.587896
 
-[node name="Label" type="Label" parent="GUI/TopBarGUI/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-text = "FPS:"
-script = SubResource("GDScript_mr14b")
-
-[node name="Label2" type="Label" parent="GUI/TopBarGUI/VBoxContainer" node_paths=PackedStringArray("target")]
-layout_mode = 2
-theme_override_font_sizes/font_size = 12
-script = ExtResource("6_god2y")
-target = NodePath("../../../..")
-properties = Array[String](["linear_velocity", "_is_on_floor"])
-format_string = "Velocity: %v
-Is Grounded: %s"
-
-[node name="DeathPlayer" type="AnimationPlayer" parent="GUI"]
-libraries = {
-"": SubResource("AnimationLibrary_qmbgo")
-}
-
-[node name="Crosshair" type="TextureRect" parent="GUI"]
+[node name="RunSmoke" type="GPUParticles3D" parent="SmoothedVisuals/botman"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.866156, 0)
 visible = false
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -8.0
-offset_top = -8.0
-offset_right = 8.0
-offset_bottom = 8.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("7_d17di")
-expand_mode = 2
+cast_shadow = 0
+emitting = false
+amount = 32
+visibility_aabb = AABB(-2.36568, -1.76826, -2.77026, 4.73136, 3.53652, 5.54051)
+process_material = SubResource("ParticleProcessMaterial_spra4")
+draw_pass_1 = SubResource("QuadMesh_6vj8a")
+
+[node name="StopSmoke" type="GPUParticles3D" parent="SmoothedVisuals/botman"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.852801, 0)
+visible = false
+cast_shadow = 0
+emitting = false
+amount = 128
+lifetime = 2.0
+visibility_aabb = AABB(-2.36568, -1.76826, -2.77026, 4.73136, 3.53652, 5.54051)
+process_material = SubResource("ParticleProcessMaterial_spra4")
+draw_pass_1 = SubResource("QuadMesh_6vj8a")
+
+[node name="JumpSmoke" type="GPUParticles3D" parent="SmoothedVisuals/botman"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.90177, 0)
+visible = false
+cast_shadow = 0
+emitting = false
+amount = 128
+lifetime = 2.0
+visibility_aabb = AABB(-2.36568, -1.76826, -2.77026, 4.73136, 3.53652, 5.54051)
+process_material = SubResource("ParticleProcessMaterial_lyrym")
+draw_pass_1 = SubResource("QuadMesh_6vj8a")
 
 [node name="FloorCast" type="ShapeCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, 0)
@@ -309,4 +299,13 @@ shape = SubResource("CylinderShape3D_6xqgi")
 target_position = Vector3(0, 0, 0)
 debug_shape_custom_color = Color(0.858824, 0.0745098, 0.72549, 1)
 
-[editable path="SmoothedVisuals/botman"]
+[node name="Decal" type="Decal" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5.11761, 0)
+visible = false
+size = Vector3(0.75, 8, 0.75)
+texture_albedo = ExtResource("7_d4veb")
+albedo_mix = 0.51
+normal_fade = 0.839
+upper_fade = 0.111906
+
+[editable path="SmoothedVisuals/botman/botman"]

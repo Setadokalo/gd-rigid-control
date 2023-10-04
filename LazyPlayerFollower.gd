@@ -1,5 +1,7 @@
 extends Node3D
 
+signal pixel_offset(offs: Vector2)
+
 @export var follow_distance := 10.0
 @export var follow_velocity_modifier := 1.0
 @export var follow_accel := 20.0
@@ -80,3 +82,40 @@ func _process(delta: float) -> void:
 			var localized = $RayCast3D.global_transform.inverse() * targetpos
 			$RayCast3D.target_position = localized
 		$RayCast3D.force_shapecast_update()
+	# Lock all registered visual objects to the pixel grid of the camera
+	for node in get_tree().get_nodes_in_group("pixel_lock"):
+		apply_gridlock(node, global_transform.basis.x, global_transform.basis.y)
+	# Lock camera to pixel intervals
+	var offs = apply_gridlock($Camera3D, global_transform.basis.x, global_transform.basis.y)
+	emit_signal("pixel_offset", offs)
+
+const PIXEL_SNAP: float = 15.0 / 210.0
+
+func apply_gridlock(node: Node3D, x_axis: Vector3, y_axis: Vector3) -> Vector2:
+	if not node.has_meta("position_offset"):
+		node.set_meta("position_offset", node.position)
+	var cam_transform := node.global_transform
+	cam_transform.origin = node.get_parent_node_3d().global_transform * node.get_meta("position_offset")
+	var worldpos_x := cam_transform.origin.project(x_axis)
+	var worldpos_y := cam_transform.origin.project(y_axis)
+	
+	var x_length := worldpos_x.length()
+	var y_length := worldpos_y.length()
+	
+	var gx_length := snappedf(worldpos_x.length(), PIXEL_SNAP)
+	var gy_length := snappedf(worldpos_y.length(), PIXEL_SNAP)
+	
+	var gx_offs := x_length - gx_length
+	var gy_offs := y_length - gy_length
+	if worldpos_x.angle_to(cam_transform.basis.x) > PI * 0.5:
+		gx_offs = -gx_offs
+	if worldpos_y.angle_to(cam_transform.basis.y) > PI * 0.5:
+		gy_offs = -gy_offs
+	
+	var gridlocked_pos_x = worldpos_x.normalized() * gx_length
+	var gridlocked_pos_y = worldpos_y.normalized() * gy_length
+	cam_transform.origin = cam_transform.origin - worldpos_x + gridlocked_pos_x - worldpos_y + gridlocked_pos_y
+	
+	node.global_transform = cam_transform
+	return Vector2(-gx_offs, gy_offs)
+	

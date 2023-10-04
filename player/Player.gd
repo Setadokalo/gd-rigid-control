@@ -1,6 +1,7 @@
 class_name Player
 extends RigidBody3D
 
+signal died
 
 const RUN_SPEED := 8.0
 const WALK_SPEED := 3.0
@@ -25,6 +26,9 @@ const ISOMETRIC_MODE: bool = true
 # so the references aren't fragile
 @onready var _death_player: AnimationPlayer = $References.death_player
 @onready var _smoothing_nodes: Array[Smoothing] = $References.smoothing_nodes
+@onready var _run_smoke: GPUParticles3D = $References.run_smoke
+@onready var _stop_smoke: GPUParticles3D = $References.stop_smoke
+@onready var _jump_smoke: GPUParticles3D = $References.jump_smoke
 
 var velocity := Vector3()
 var running := false
@@ -85,35 +89,9 @@ func get_input_dir() -> Vector3:
 	return (facing_dir * Vector3(input_dir.x, 0, input_dir.y)).limit_length()
 
 func _physics_process(delta: float) -> void:
+	var old_vel = linear_velocity
 	velocity = linear_velocity
-	var flat_vel = linear_velocity * Vector3(1.0, 0.0, 1.0)
-	# animation
-	_is_on_floor = is_on_floor()
-	if flat_vel.length_squared() > 0.1:
-		global_transform.basis = global_transform.basis.slerp(
-			global_transform.looking_at(position + flat_vel).basis, 
-			delta * flat_vel.length() * 4.0
-		)
-	
-	# object interaction
-	
-	if Input.is_action_just_pressed("activate"):
-		var space_state := get_world_3d().direct_space_state
-		var camera: Camera3D = get_viewport().get_camera_3d()
-		var mousepos: Vector2 = get_viewport().get_mouse_position()
-		var origin := camera.global_position
-		var end := origin + camera.project_ray_normal(mousepos) * 150.0
-		# layer that selectable objects lie on
-		const SELECTABLE_MASK := 0b1000_0000_0000_0000_0000_0000
-		# layer that occluding objects lie on
-		const OCCLUDING_MASK := 0b0001
-		var query := PhysicsRayQueryParameters3D.create(origin, end, SELECTABLE_MASK | OCCLUDING_MASK)
-		query.collide_with_areas = true
-		
-		var result := space_state.intersect_ray(query)
-		if not result.is_empty():
-			if result.collider.collision_mask & SELECTABLE_MASK != 0:
-				result.collider.activate(self, (result.position - origin).length())
+	var flat_vel = velocity * Vector3(1.0, 0.0, 1.0)
 	
 	# physics
 	_jump_grace -= delta
@@ -131,10 +109,11 @@ func _physics_process(delta: float) -> void:
 	
 	var target_speed = RUN_SPEED if running else WALK_SPEED
 	
-	var speed_factor := 4.0
+	var speed_factor := 2.0
+	
 	if direction and not is_on_floor() \
 		and (direction * target_speed).length_squared() > (flat_vel).length_squared():
-		speed_factor = 0.5
+		speed_factor = 1.5
 	# deceleration
 	elif not direction:
 		speed_factor = 2.0 if is_on_floor() else 0.5
@@ -150,7 +129,23 @@ func _physics_process(delta: float) -> void:
 	else:
 		physics_material_override.friction = 0.0
 	
+	# rotate towards velocity
+	
+	_is_on_floor = is_on_floor()
+	if flat_vel.length_squared() > 0.1:
+		global_transform.basis = global_transform.basis.slerp(
+			global_transform.looking_at(position + flat_vel).basis, 
+			delta * flat_vel.length() * 4.0
+		)
+	
 	# update animation
+	
+	if not is_on_floor():
+		if $SmoothedVisuals/AnimationTree.get("parameters/jumptrans/current_state") != "airborne":
+			$SmoothedVisuals/AnimationTree.set("parameters/jumptrans/transition_request", "airborne") 
+	else:
+		if $SmoothedVisuals/AnimationTree.get("parameters/jumptrans/current_state") != "grounded":
+			$SmoothedVisuals/AnimationTree.set("parameters/jumptrans/transition_request", "grounded") 
 	
 	var flat_local_vel := (velocity * global_transform.basis) * Vector3(1.0, 0.0, -1.0)
 	# walk speed as a fraction of run speed
@@ -180,6 +175,31 @@ func _physics_process(delta: float) -> void:
 		"parameters/jumpblend/blend_amount", 
 		1.0 if is_on_floor() else 0.0
 	)
+	_run_smoke.emitting = is_on_floor() and velocity.length() > WALK_SPEED * 1.5
+	_stop_smoke.emitting = is_on_floor() and old_vel.length() - velocity.length() > 0.5
+	_jump_smoke.emitting = _jump_grace > 0.0
+	# player exclusive logic
+	
+	# object interaction
+	
+	if Input.is_action_just_pressed("activate"):
+		var space_state := get_world_3d().direct_space_state
+		var camera: Camera3D = get_viewport().get_camera_3d()
+		var mousepos: Vector2 = get_viewport().get_mouse_position()
+		var origin := camera.global_position
+		var end := origin + camera.project_ray_normal(mousepos) * 150.0
+		# layer that selectable objects lie on
+		const SELECTABLE_MASK := 0b1000_0000_0000_0000_0000_0000
+		# layer that occluding objects lie on
+		const OCCLUDING_MASK := 0b0001
+		var query := PhysicsRayQueryParameters3D.create(origin, end, SELECTABLE_MASK | OCCLUDING_MASK)
+		query.collide_with_areas = true
+		
+		var result := space_state.intersect_ray(query)
+		if not result.is_empty():
+			if result.collider.collision_mask & SELECTABLE_MASK != 0:
+				result.collider.activate(self, (result.position - origin).length())
+	
 
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	var gravity = Vector3.ZERO
@@ -264,20 +284,13 @@ func try_stair_teleport(delta: float, gravity: Vector3) -> void:
 	if is_floor and step_height > STAIR_HEIGHT / 8.0:
 		print(step_height)
 		global_position.y += step_height - gravity.y * delta * 0.5
-	
-
-func die() -> void:
-	global_position = spawn_point
-	global_rotation = Vector3(0.0, 0.0, 0.0)
-	_death_player.play("death_flash")
-
-
-func _on_entered_death_collider(body: Node3D) -> void:
-	print(body.name, " entered collision")
-	if body == self:
-		die()
 
 func teleport(dest: Vector3) -> void:
 	global_position = dest
 	for node in _smoothing_nodes:
 		node.teleport()
+
+func die() -> void:
+	global_position = spawn_point
+	global_rotation = Vector3(0.0, 0.0, 0.0)
+	died.emit()

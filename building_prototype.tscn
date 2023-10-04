@@ -1,7 +1,19 @@
-[gd_scene load_steps=13 format=3 uid="uid://datvlpoheensh"]
+[gd_scene load_steps=15 format=3 uid="uid://datvlpoheensh"]
 
+[ext_resource type="Shader" path="res://assets/pixel_cavity_fading.gdshader" id="1_8l3oi"]
 [ext_resource type="Texture2D" uid="uid://j5yjn2dly3hn" path="res://assets/prototype textures/Light/texture_06.png" id="1_q8lku"]
+[ext_resource type="Texture2D" uid="uid://44vv3t8ip684" path="res://assets/prototype textures/Light/texture_07.png" id="2_bdmmu"]
 [ext_resource type="Script" path="res://HidingOccluder.gd" id="2_iwlv8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y1r8j"]
+render_priority = 0
+shader = ExtResource("1_8l3oi")
+shader_parameter/zNear = 2.0
+shader_parameter/zFar = 10.0
+shader_parameter/color = Color(0.541176, 0.541176, 0.541176, 1)
+shader_parameter/emission = Color(0, 0, 0, 1)
+shader_parameter/fade = 0.095
+shader_parameter/albedo_texture = ExtResource("2_bdmmu")
 
 [sub_resource type="Shader" id="Shader_ymq6p"]
 code = "// NOTE: Shader automatically converted from Godot Engine 4.1.1.stable's StandardMaterial3D.
@@ -30,14 +42,6 @@ fractal_octaves = 1
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_5pj52"]
 generate_mipmaps = false
 noise = SubResource("FastNoiseLite_n1qa5")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_y1r8j"]
-render_priority = 0
-shader = SubResource("Shader_ymq6p")
-shader_parameter/albedo = Color(0.596078, 0.596078, 0.596078, 1)
-shader_parameter/fade = 0.0
-shader_parameter/texture_albedo = ExtResource("1_q8lku")
-shader_parameter/fade_tex = SubResource("NoiseTexture2D_5pj52")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0g1yd"]
 render_priority = 0
@@ -79,7 +83,7 @@ material = SubResource("StandardMaterial3D_ctaxp")
 size = Vector3(13.9, 0.1, 13.9)
 
 [node name="Building2" type="CSGBox3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.7583, 7.34651, 9.22853)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.8864, 13.4921, 5.17206)
 use_collision = true
 collision_layer = 129
 collision_mask = 7

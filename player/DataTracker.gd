@@ -1,4 +1,4 @@
-extends Label
+extends RichTextLabel
 
 @export var target: Node
 @export var properties: Array[String] = []
@@ -11,7 +11,11 @@ func _ready() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	if not target:
+		text = "[Target not initialized]"
+		return
 	var data := []
-	for property in properties:
-		data.push_back(target.get(property))
+	data.resize(properties.size())
+	for p_idx in properties.size():
+		data[p_idx] = target.get(properties[p_idx])
 	text = format_string % data

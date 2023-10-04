@@ -1,0 +1,404 @@
+[gd_scene load_steps=37 format=3 uid="uid://cwxnkiqax6sm5"]
+
+[ext_resource type="Script" path="res://pixelmain.gd" id="1_mcvis"]
+[ext_resource type="Script" path="res://LazyPlayerFollower.gd" id="2_xijdp"]
+[ext_resource type="Script" path="res://daynightspinner.gd" id="3_3wuy1"]
+[ext_resource type="Shader" path="res://assets/pixel_cavity.gdshader" id="4_e0akb"]
+[ext_resource type="Script" path="res://HidingOccluder.gd" id="6_ivmm2"]
+[ext_resource type="Texture2D" uid="uid://csxk7wjle032l" path="res://assets/prototype textures/Dark/texture_09.png" id="7_1p161"]
+[ext_resource type="PackedScene" uid="uid://datvlpoheensh" path="res://building_prototype.tscn" id="8_ot82y"]
+[ext_resource type="PackedScene" uid="uid://d4bxmkgjuxpr4" path="res://player/Player.tscn" id="9_ogrj3"]
+[ext_resource type="Shader" path="res://assets/pixel_no_cavity.gdshader" id="9_pgm86"]
+[ext_resource type="Texture2D" uid="uid://bp14sqe0smg2d" path="res://assets/textures/leaf.png" id="10_881i8"]
+[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="11_mh2as"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_fhlwj"]
+size = Vector2(4, 46)
+
+[sub_resource type="Shader" id="Shader_j01uj"]
+code = "shader_type spatial;
+
+float hash(vec2 a) {
+	return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 );
+}
+
+void fragment() {
+	ALBEDO = vec3(hash(trunc(UV * vec2(2.0, 23.0) * 8.0))) * vec3(1.0, 0.2, 0.2);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v0ljl"]
+render_priority = 0
+shader = SubResource("Shader_j01uj")
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_urf64"]
+radius = 0.2
+
+[sub_resource type="Environment" id="Environment_ch3mh"]
+background_mode = 1
+background_color = Color(0.196078, 0.431373, 0.627451, 1)
+tonemap_mode = 3
+tonemap_white = 4.0
+sdfgi_y_scale = 0
+
+[sub_resource type="Gradient" id="Gradient_5mksh"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 0.552661, 0.36677, 1)
+
+[sub_resource type="Gradient" id="Gradient_a2anf"]
+interpolation_color_space = 2
+offsets = PackedFloat32Array(0.357143, 0.421875, 0.486607, 0.524554, 0.633929)
+colors = PackedColorArray(0.167662, 0.219234, 0.39817, 1, 0.141605, 0.264193, 0.47032, 1, 0.709804, 0.403922, 0.168627, 1, 0.709804, 0.403922, 0.168627, 1, 0.468033, 0.640916, 0.900531, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0xyng"]
+render_priority = 0
+shader = ExtResource("4_e0akb")
+shader_parameter/zNear = 0.25
+shader_parameter/zFar = 1000.0
+shader_parameter/color = Color(0.34902, 0.34902, 0.34902, 1)
+shader_parameter/emission = Color(0, 0, 0, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tbddf"]
+albedo_texture = ExtResource("7_1p161")
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_cbgk4"]
+size = Vector3(200, 5, 200)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_6q4gr"]
+top_radius = 0.34
+radial_segments = 5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ptt0h"]
+albedo_color = Color(0.364706, 0.290196, 0.219608, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_crswt"]
+top_radius = 0.095
+bottom_radius = 0.334
+radial_segments = 5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2tfr4"]
+render_priority = 0
+shader = ExtResource("4_e0akb")
+shader_parameter/zNear = 0.25
+shader_parameter/zFar = 1000.0
+shader_parameter/color = Color(0.32549, 0.466667, 0.141176, 1)
+shader_parameter/emission = Color(0, 0, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_tre8w"]
+material = SubResource("ShaderMaterial_2tfr4")
+radius = 0.8
+height = 1.3
+radial_segments = 8
+rings = 4
+
+[sub_resource type="Shader" id="Shader_fk6bj"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.1.1.stable's ParticleProcessMaterial.
+
+shader_type particles;
+uniform float emission_sphere_radius;
+
+#include \"assets/random.gdshaderinc\"
+
+vec3 rotated(vec3 v, vec3 a, float th) {
+	return v * cos(th) + cross(a, v) * sin(th) + a * dot(a, v) * (1.0 - cos(th));
+}
+
+void start() {
+	uint base_number = NUMBER;
+	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);
+	
+	CUSTOM.w = rand_from_seed(alt_seed);
+
+	if (RESTART_POSITION) {
+		float s = rand_from_seed_m1_p1(alt_seed);
+		float t = rand_from_seed(alt_seed) * 2.0 * PI;
+		float radius = emission_sphere_radius * sqrt(1.0 - s * s);
+		vec3 pos = vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s);
+		pos.y *= 0.75;
+		TRANSFORM[3].xyz = pos;
+		vec3 normal = normalize(pos);
+		
+		vec3 binormal = cross(vec3(0.0, 1.0, 0.0), normal);
+		if (length(binormal) < 0.0001) {
+			// normal is parallel to Y. Choose Z as the binormal.
+			binormal = vec3(0.0, 0.0, 1.0);
+		}
+		binormal = rotated(normalize(binormal), normal, rand_from_seed(alt_seed) * PI * 2.0);
+		CUSTOM.xyz = rotated(normal, binormal, rand_from_seed(alt_seed) * 0.8);
+	}
+	TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;
+}
+
+void process() { }
+
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8d7ar"]
+shader = SubResource("Shader_fk6bj")
+shader_parameter/emission_sphere_radius = 1.1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xd7ay"]
+render_priority = 1
+shader = ExtResource("9_pgm86")
+shader_parameter/zNear = 2.0
+shader_parameter/zFar = 10.0
+shader_parameter/color = Color(0.576471, 0.72549, 0.592157, 1)
+shader_parameter/emission = Color(0, 0, 0, 1)
+shader_parameter/frameCount = 4
+shader_parameter/albedo_texture = ExtResource("10_881i8")
+
+[sub_resource type="QuadMesh" id="QuadMesh_drbup"]
+material = SubResource("ShaderMaterial_xd7ay")
+size = Vector2(0.075, 0.075)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pe72d"]
+albedo_color = Color(0.0235294, 0.364706, 0.0666667, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hgxni"]
+render_priority = 0
+shader = ExtResource("4_e0akb")
+shader_parameter/zNear = 0.25
+shader_parameter/zFar = 1000.0
+shader_parameter/color = Color(0.317647, 0.537255, 0.0392157, 1)
+shader_parameter/emission = Color(0, 0, 0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_shm85"]
+render_priority = 0
+shader = ExtResource("4_e0akb")
+shader_parameter/zNear = 0.25
+shader_parameter/zFar = 1000.0
+shader_parameter/color = Color(0.317647, 0.537255, 0.0392157, 1)
+shader_parameter/emission = Color(0, 0, 0, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qccc1"]
+render_priority = 0
+shader = ExtResource("4_e0akb")
+shader_parameter/zNear = 0.25
+shader_parameter/zFar = 1000.0
+shader_parameter/color = Color(0.752941, 0, 0.0784314, 1)
+shader_parameter/emission = Color(0, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_qkjsv"]
+material = SubResource("ShaderMaterial_qccc1")
+size = Vector3(4, 1, 4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_k3kep"]
+size = Vector3(4, 1, 4)
+
+[node name="World" type="Node3D"]
+script = ExtResource("1_mcvis")
+
+[node name="static_grid" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.999999, 0, 0, 0, 1, -2.89688, 0.503908, 22.5394)
+mesh = SubResource("PlaneMesh_fhlwj")
+skeleton = NodePath("../PlayerTrackingCamera")
+surface_material_override/0 = SubResource("ShaderMaterial_v0ljl")
+
+[node name="PlayerTrackingCamera" type="Node3D" parent="." node_paths=PackedStringArray("target_node")]
+transform = Transform3D(0.707107, -0.353553, 0.612372, 0, 0.866025, 0.5, -0.707107, -0.353553, 0.612372, -2.11773, 0, 2.63583)
+script = ExtResource("2_xijdp")
+follow_distance = 5.0
+follow_velocity_modifier = 0.75
+follow_accel = 5.0
+follow_decel = 5.0
+target_node = NodePath("../Player")
+
+[node name="Camera3D" type="Camera3D" parent="PlayerTrackingCamera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 50)
+projection = 1
+current = true
+fov = 42.0
+size = 15.0
+near = 0.25
+far = 1000.0
+
+[node name="RayCast3D" type="ShapeCast3D" parent="PlayerTrackingCamera"]
+shape = SubResource("SphereShape3D_urf64")
+max_results = 4
+collision_mask = 128
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_ch3mh")
+
+[node name="Sun" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(0.700029, 0.6632, -0.264814, -0.207219, 0.543521, 0.813416, 0.683389, -0.51454, 0.517908, -8.58804, 31.2744, 4.0996)
+light_cull_mask = 4294443007
+shadow_enabled = true
+directional_shadow_fade_start = 0.9
+directional_shadow_max_distance = 50.0
+script = ExtResource("3_3wuy1")
+color_ramp = SubResource("Gradient_5mksh")
+bg_color_ramp = SubResource("Gradient_a2anf")
+
+[node name="Moon" type="DirectionalLight3D" parent="WorldEnvironment/Sun"]
+transform = Transform3D(0.88703, 0.353594, 0.296899, 0.248584, -0.907626, 0.338262, 0.389081, -0.226245, -0.892989, 0, 0, 0)
+light_color = Color(0.407843, 0.470588, 0.580392, 1)
+light_energy = 0.5
+light_cull_mask = 4294443007
+shadow_enabled = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 21.7354, 0)
+light_negative = true
+directional_shadow_mode = 0
+sky_mode = 1
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 21.7354, 0)
+shadow_enabled = true
+shadow_opacity = 0.58
+shadow_blur = 0.14
+directional_shadow_mode = 1
+sky_mode = 1
+
+[node name="Ground" type="CSGBox3D" parent="."]
+use_collision = true
+collision_layer = 129
+collision_mask = 7
+size = Vector3(150, 1, 150)
+material = SubResource("ShaderMaterial_0xyng")
+script = ExtResource("6_ivmm2")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.44086, 0.464117, 24.9576)
+operation = 2
+size = Vector3(6, 1, 64)
+material = SubResource("StandardMaterial3D_tbddf")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="Ground"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -26.5591, 0.464117, -4.04241)
+operation = 2
+size = Vector3(6, 1, 64)
+material = SubResource("StandardMaterial3D_tbddf")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.81593, 0)
+cast_shadow = 3
+mesh = SubResource("BoxMesh_cbgk4")
+
+[node name="Building2" parent="." instance=ExtResource("8_ot82y")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.7583, 7.88243, 9.22853)
+
+[node name="Building3" parent="." instance=ExtResource("8_ot82y")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -20.8226, 7.88243, -17.0941)
+
+[node name="Building5" parent="." instance=ExtResource("8_ot82y")]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 1.56158, 7.88243, -17.0941)
+
+[node name="Building4" parent="." instance=ExtResource("8_ot82y")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.7583, 7.88243, 30.0689)
+
+[node name="Player" parent="." instance=ExtResource("9_ogrj3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.970568, 1.47451, 5.50316)
+jump_strength = 8.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.986544, 0.163498, 0, -0.163498, 0.986544, 0, 0, 0, 1, 9.11736, 1.44309, 0)
+mesh = SubResource("CylinderMesh_6q4gr")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("StandardMaterial3D_ptt0h")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(0.959776, -0.280767, 0, 0.280767, 0.959776, 0, 0, 0, 1, -0.214086, 1.72015, 0)
+mesh = SubResource("CylinderMesh_crswt")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("StandardMaterial3D_ptt0h")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
+transform = Transform3D(1, -7.45058e-09, 0, 7.45058e-09, 1, 0, 0, 0, 1, 0.0795765, 0.657969, 0.668533)
+cast_shadow = 3
+mesh = SubResource("SphereMesh_tre8w")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="MeshInstance3D/MeshInstance3D2/MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 0.88, 0, 0, 0, 1, 0, 0, 0)
+cast_shadow = 0
+amount = 128
+lifetime = 10000.0
+explosiveness = 1.0
+local_coords = true
+process_material = SubResource("ShaderMaterial_8d7ar")
+draw_passes = 4
+draw_pass_1 = SubResource("QuadMesh_drbup")
+draw_pass_2 = null
+draw_pass_3 = null
+draw_pass_4 = null
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
+transform = Transform3D(1, -7.45058e-09, 0, 7.45058e-09, 1, 0, 0, 0, 1, -0.365357, 1.28436, -0.800925)
+cast_shadow = 3
+mesh = SubResource("SphereMesh_tre8w")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="MeshInstance3D/MeshInstance3D2/MeshInstance3D5"]
+transform = Transform3D(1, 0, 0, 0, 0.88, 0, 0, 0, 1, 0, 0, 0)
+cast_shadow = 0
+amount = 128
+lifetime = 10000.0
+explosiveness = 1.0
+local_coords = true
+process_material = SubResource("ShaderMaterial_8d7ar")
+draw_passes = 4
+draw_pass_1 = SubResource("QuadMesh_drbup")
+draw_pass_2 = null
+draw_pass_3 = null
+draw_pass_4 = null
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
+transform = Transform3D(0.711329, 0.0349125, 0.701991, 0.0349126, 0.995778, -0.0849005, -0.701991, 0.0849005, 0.707107, 0.880602, 0.872736, -0.53218)
+cast_shadow = 3
+mesh = SubResource("SphereMesh_tre8w")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="MeshInstance3D/MeshInstance3D2/MeshInstance3D6"]
+transform = Transform3D(1, 0, 0, 0, 0.88, 0, 0, 0, 1, 0, 0, 0)
+cast_shadow = 0
+amount = 128
+lifetime = 10000.0
+explosiveness = 1.0
+local_coords = true
+process_material = SubResource("ShaderMaterial_8d7ar")
+draw_passes = 4
+draw_pass_1 = SubResource("QuadMesh_drbup")
+draw_pass_2 = null
+draw_pass_3 = null
+draw_pass_4 = null
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.535018, -0.57694, -0.814323)
+visible = false
+mesh = SubResource("SphereMesh_tre8w")
+surface_material_override/0 = SubResource("StandardMaterial3D_pe72d")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
+transform = Transform3D(1.2, 0, 0, 0, 1.22, 0, 0, 0, 1.47, 0.392544, 0.620117, -0.796112)
+visible = false
+mesh = SubResource("SphereMesh_tre8w")
+surface_material_override/0 = SubResource("ShaderMaterial_hgxni")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="MeshInstance3D/MeshInstance3D2"]
+transform = Transform3D(1.2, -5.96046e-08, 0, -5.96046e-08, 1.22, 0, 0, 0, 1.47, -0.620878, 1.18298, -0.796112)
+visible = false
+mesh = SubResource("SphereMesh_tre8w")
+surface_material_override/0 = SubResource("ShaderMaterial_shm85")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.1457, 2.66519, 9.20271)
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="StaticBody3D"]
+mesh = SubResource("BoxMesh_qkjsv")
+skeleton = NodePath("")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_k3kep")
+
+[node name="StaticBody3D2" type="StaticBody3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, -1.2808, 0.8139, -0.99833)
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="StaticBody3D/StaticBody3D2"]
+mesh = SubResource("BoxMesh_qkjsv")
+skeleton = NodePath("")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D/StaticBody3D2"]
+shape = SubResource("BoxShape3D_k3kep")
+
+[node name="botman" parent="." instance=ExtResource("11_mh2as")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -2.10731, 1.3993, 6.00493)
+visible = false
