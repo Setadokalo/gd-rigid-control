@@ -237,15 +237,16 @@ light_energy = 0.5
 light_cull_mask = 4294443007
 shadow_enabled = true
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+[node name="PlatformerLight" type="DirectionalLight3D" parent="WorldEnvironment"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 21.7354, 0)
 light_negative = true
 directional_shadow_mode = 0
 sky_mode = 1
 
-[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="WorldEnvironment"]
+[node name="PlatformerShadow" type="DirectionalLight3D" parent="WorldEnvironment"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 21.7354, 0)
 shadow_enabled = true
+shadow_bias = 1.5
 shadow_opacity = 0.58
 shadow_blur = 0.14
 directional_shadow_mode = 1

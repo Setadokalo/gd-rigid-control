@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://player/Player.gd" id="1_lidto"]
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="2_3eixf"]
-[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="3_l52i0"]
+[ext_resource type="PackedScene" uid="uid://c35548pv87yb7" path="res://player/botman.glb" id="3_8s01n"]
 [ext_resource type="Texture2D" uid="uid://cj27d3stdeugw" path="res://assets/textures/smoke.png" id="4_2y88l"]
 [ext_resource type="Texture2D" uid="uid://bg23o8h44jmrf" path="res://assets/textures/drop_shadow.png" id="7_d4veb"]
 
@@ -66,6 +66,7 @@ sync = true
 [sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_lo38e"]
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_v1b4p"]
+graph_offset = Vector2(12, -300)
 nodes/Add2/node = SubResource("AnimationNodeAdd2_kq0qu")
 nodes/Add2/position = Vector2(60, 120)
 nodes/Animation/node = SubResource("AnimationNodeAnimation_by8hy")
@@ -204,7 +205,7 @@ anim_player = NodePath("../botman/botman/AnimationPlayer")
 advance_expression_base_node = NodePath("../..")
 active = true
 parameters/Add2/add_amount = 1.0
-parameters/idleblend/blend_amount = 1.0
+parameters/idleblend/blend_amount = 0.0
 parameters/jumpshot/active = false
 parameters/jumpshot/internal_active = false
 parameters/jumpshot/request = 0
@@ -214,40 +215,10 @@ parameters/jumptrans/current_index = 1
 parameters/runblend/blend_amount = 1.0
 parameters/walkspeed/scale = 0.5
 
-[node name="botman" type="Node3D" parent="SmoothedVisuals"]
+[node name="botman" type="Node3D" parent="SmoothedVisuals" groups=["pixel_lock"]]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
-[node name="botman" parent="SmoothedVisuals/botman" instance=ExtResource("3_l52i0")]
-
-[node name="Skeleton3D" parent="SmoothedVisuals/botman/botman/Armature" index="0"]
-bones/0/position = Vector3(0, 0.805022, -0.00959882)
-bones/0/rotation = Quaternion(0.0436224, 0.664855, 0.744679, -0.0389464)
-bones/1/rotation = Quaternion(-5.15535e-08, 0.730088, 0.683353, -4.92368e-08)
-bones/2/rotation = Quaternion(0.0739421, 0.14243, -0.00387913, 0.987032)
-bones/3/rotation = Quaternion(2.76495e-07, 9.20721e-08, -0.775872, 0.630891)
-bones/4/rotation = Quaternion(-0.284684, 0.304991, -0.480477, 0.771412)
-bones/5/rotation = Quaternion(0.832947, -0.00105714, -0.000702351, 0.553351)
-bones/7/rotation = Quaternion(2.05967e-09, 2.80277e-07, -0.0261957, 0.999657)
-bones/8/rotation = Quaternion(9.15129e-08, -2.42488e-07, 0.775872, 0.630891)
-bones/9/rotation = Quaternion(0.300984, 0.163035, 0.55815, 0.755841)
-bones/10/rotation = Quaternion(0.605368, 0.000768225, 0.00101025, 0.795945)
-bones/12/rotation = Quaternion(2.05968e-09, -2.80277e-07, 0.0261957, 0.999657)
-bones/13/rotation = Quaternion(-0.0242824, -7.84583e-09, -2.00088e-09, 0.999705)
-bones/14/rotation = Quaternion(-0.133558, -0.132933, 0.00405209, 0.982077)
-bones/16/rotation = Quaternion(-0.316553, -0.166716, -0.562307, 0.745528)
-bones/17/rotation = Quaternion(-0.00853757, 0.0178555, 0.599127, 0.800409)
-bones/18/rotation = Quaternion(-0.0331853, -0.012862, -0.528317, 0.848301)
-bones/20/rotation = Quaternion(-0.366346, -0.0160623, -0.213481, 0.905516)
-bones/21/rotation = Quaternion(0.00670128, 0.0196244, -0.205765, 0.978382)
-bones/22/rotation = Quaternion(-0.019106, -0.0095543, 0.630629, 0.77579)
-bones/25/position = Vector3(0.117056, 0.379537, -0.531697)
-bones/25/rotation = Quaternion(-0.679529, 0.195554, -0.679528, 0.195553)
-bones/26/position = Vector3(-0.14085, 0.209034, -0.438862)
-bones/26/rotation = Quaternion(0.686014, -0.171421, -0.686014, 0.171421)
-
-[node name="Body" parent="SmoothedVisuals/botman/botman/Armature/Skeleton3D" index="0"]
-blend_shapes/LElbowBendFix = 0.889787
-blend_shapes/LShoulderBackRotation = 0.587896
+[node name="botman" parent="SmoothedVisuals/botman" instance=ExtResource("3_8s01n")]
 
 [node name="RunSmoke" type="GPUParticles3D" parent="SmoothedVisuals/botman"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.866156, 0)
@@ -307,5 +278,3 @@ texture_albedo = ExtResource("7_d4veb")
 albedo_mix = 0.51
 normal_fade = 0.839
 upper_fade = 0.111906
-
-[editable path="SmoothedVisuals/botman/botman"]

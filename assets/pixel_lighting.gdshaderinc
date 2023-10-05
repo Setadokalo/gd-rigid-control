@@ -27,6 +27,30 @@ varying flat int id;
 #ifdef FADING
 uniform float fade;
 #include "random.gdshaderinc"
+
+float hash_v2( vec2 a )
+{
+
+    return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 );
+
+}
+
+// Value noise courtesy of BigWingz 
+// check his youtube channel he has
+// a video of this one.
+// Succint version by FabriceNeyret
+float noise( vec2 U )
+{
+    vec2 id = floor( U );
+          U = fract( U );
+    U *= U * ( 3. - 2. * U );  
+
+    vec2 A = vec2( hash_v2(id)            , hash_v2(id + vec2(0,1)) ),  
+         B = vec2( hash_v2(id + vec2(1,0)), hash_v2(id + vec2(1,1)) ),  
+         C = mix( A, B, U.x);
+
+    return mix( C.x, C.y, U.y );
+}
 #endif
 
 const float outline_offset = 1.0;
@@ -91,7 +115,7 @@ void vertex() {
 
 void fragment() {
 #ifdef FADING
-	if ((CAMERA_VISIBLE_LAYERS & uint(524288)) != uint(0) && fade > rand_v2(SCREEN_UV * VIEWPORT_SIZE + vec2(VERTEX.z * -2000.0))) discard;
+	if ((CAMERA_VISIBLE_LAYERS & uint(524288)) != uint(0) && fade > (rand_v2(vec2(rand_v2(SCREEN_UV * VIEWPORT_SIZE) * 10000.0, FRAGCOORD.z * 1000.0)) * 0.99)) discard;
 #endif
 vec2 base_uv = UV;
 #ifdef ANIMATION
